@@ -1,0 +1,113 @@
+#+title: Config
+
+My custom emacs config
+
+* TODOs
+** TODO Can this be tangled into an init.el using org-babel rather than using nix parsing
+
+Could also be used to directly construct the default.el to avoid any nix parsing
+
+* General
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq user-full-name "Patrick H Morris"
+      user-mail-address "patrick.morris.310@gmail.com")
+#+END_SRC
+
+Disable some emacs defaults
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq-default
+ inhibit-startup-screen t               ; Disable start-up screen
+ inhibit-startup-message t              ; Disable startup message
+ inhibit-startup-echo-area-message t    ; Disable initial echo message
+ initial-scratch-message ""             ; Empty the initial *scratch* buffer
+ ;;initial-buffer-choice t
+)               ; Open *scratch* buffer at init
+#+END_SRC
+
+Set up encoding
+
+#+begin_src emacs-lisp :tangle yes
+(set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
+(prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
+(set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
+(set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
+(set-language-environment "English")    ; Set up multilingual environment
+#+end_src
+
+Remove unneeded modes
+#+begin_src emacs-lisp :tangle yes
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+#+end_src
+
+Benchmarking
+
+#+begin_src emacs-lisp :tangle yes
+(use-package benchmark-init
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+(add-hook 'after-init-hook
+          (lambda () (message "loaded in %s" (emacs-init-time))))
+#+end_src
+
+** Server
+#+begin_src emacs-lisp :tangle yes
+(require 'server)
+
+(unless (server-running-p)
+  (server-start))
+#+end_src
+
+* Magit
+
+#+begin_src emacs-lisp :tangle yes
+(use-package magit
+  :config (advice-add 'magit-process-filter :after #'color-buffer))
+#+end_src
+
+* Evil
+
+#+begin_src emacs-lisp :tangle yes
+(use-package evil
+  :ensure t
+  :config
+
+  (evil-mode 1)
+  (use-package evil-leader
+    :ensure t
+    :config
+    (global-evil-leader-mode t)
+    (evil-leader/set-leader "<SPC>")
+    (evil-leader/set-key
+      "s s" 'swiper
+      "d x w" 'delete-trailing-whitespace))
+
+  (use-package evil-surround
+    :ensure t
+    :config (global-evil-surround-mode))
+
+  (use-package evil-indent-textobject
+    :ensure t)
+
+  (use-package evil-org
+    :ensure t
+    :config
+    (evil-org-set-key-theme
+	  '(textobjects insert navigation additional shift todo heading))
+    (add-hook 'org-mode-hook (lambda () (evil-org-mode)))))
+#+end_src
+
+* Which-key
+#+begin_src emacs-lisp :tangle yes
+(use-package which-key
+  :diminish
+  :defer 5
+  :config (which-key-mode)
+          (which-key-setup-side-window-bottom)
+          (setq which-key-idle-delay 0.05))
+#+end_src
