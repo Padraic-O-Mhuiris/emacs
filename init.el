@@ -1,7 +1,3 @@
-;; #############################################################################
-;; General Configuration
-;; #############################################################################
-
 ;; Remove uneeded UI elements
 (setq inhibit-startup-message t)
 (scroll-bar-mode -1)
@@ -12,10 +8,7 @@
 (setq visible-bell t)
 
 ;; Font
-(set-face-attribute 'default nil :font "Iosevka NFM" :height 120)
-
-;; Theme
-(load-theme 'wombat)
+(set-face-attribute 'default nil :font "Iosevka NFM" :height 100)
 
 ;; User configuration
 (setq user-full-name "Patrick H Morris"
@@ -24,61 +17,116 @@
 ;; use-package
 (setq use-package-always-ensure t)
 
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+;; Line-numbers
+(column-number-mode)
+(global-display-line-numbers-mode t)
+
+(dolist (mode '(org-mode-hook 
+                term-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; #############################################################################
 ;; general.el
 ;; #############################################################################
-(use-package general)
+(use-package general
+  :config
+  (general-evil-setup t)
 
-;; global keybindings
+  (general-define-key
+   "<escape>" 'keyboard-escape-quit
+   "C-c t" 'clm/toggle-command-log-buffer
+   "C-M-j" 'counsel-switch-buffer)
 
-;; - Make ESC quit prompts
-;; (general-define-key
-;;  "<escape>" 'keyboard-escape-quit
-;;  "C-c t" 'clm/toggle-command-log-buffer)
+  (general-create-definer pm/leader-key-def
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
 
-;; (general-create-definer leader-key
-;;   ;; :prefix my-leader
-;;   :prefix "SPC")
+  (pm/leader-key-def
+   "t" '(:ignore t :which-key "toggles")
+   "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; (general-create-definer leader-group
-;;   :prefix "SPC m")
+;; #############################################################################
+;; evil
+;; #############################################################################
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+  
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-;; ;; Windows
-;; (general-create-definer window-leader
-;;   :prefix "SPC w")
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
 
-;; (window-leader
-;;  :keymaps 'normal
-;;  "d" '((lambda ()
-;; 	 (interactive)
-;; 	 (delete-window)
-;; 	 (balance-windows)))
-;;  "v" '((lambda ()
-;; 	 (interactive)
-;; 	 (split-window-vertically)
-;; 	 (balance-windows)))
-;;  "h" '((lambda ()
-;; 	 (interactive)
-;; 	 (split-window-horizontally)
-;; 	 (balance-windows))))
-;; Random keybindings
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+
+;; #############################################################################
+;; hydra
+;; #############################################################################
+(use-package hydra)
+
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("+" text-scale-increase "+")
+  ("-" text-scale-decrease "-")
+  ("f" nil "finished" :exit t))
+
+(pm/leader-key-def
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 ;; #############################################################################
 ;; doom-modeline
 ;; #############################################################################
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+  :custom ((doom-modeline-height 15))
+  :config
+  (use-package all-the-icons))
 
 ;; #############################################################################
-;; Ivy
+;; doom-themes
+;; #############################################################################
+(use-package doom-themes
+  :config
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-moonlight t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config))
+
+;; #############################################################################
+;; ivy
 ;; #############################################################################
 (use-package ivy
   :diminish
   :config
-  (ivy-mode 1))
+  (ivy-mode 1)
+
+  (use-package ivy-rich
+    :init (ivy-rich-mode 1)))
+
+;; #############################################################################
+;; counsel
+;; #############################################################################
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+	 ("C-x b" . counsel-ibuffer)
+	 :map minibuffer-local-map
+	 ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil)) 
+
 
 ;; #############################################################################
 ;; command-log-mode
@@ -89,16 +137,29 @@
   :bind (("C-c t" . clm/toggle-command-log-buffer)))
 
 ;; #############################################################################
-;; Evil-mode
-;; #############################################################################
-(use-package evil
-  :diminish
-  :init
-  (evil-mode 1))
-
-;; #############################################################################
 ;; which-key
 ;; #############################################################################
 (use-package which-key
-  :diminish
-  :init (which-key-mode))
+  :diminish which-key-mode
+  :init (which-key-mode)
+  :config
+  (setq which-key-idle-delay 0))
+
+;; #############################################################################
+;; rainbow-delimiters
+;; #############################################################################
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+;; #############################################################################
+;; helpful
+;; #############################################################################
+(use-package helpful
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))

@@ -37,13 +37,20 @@
               with epkgs; [
                 use-package
                 evil
+		evil-collection
                 general
                 which-key
                 command-log-mode
                 ivy
+                ivy-rich
                 counsel
                 swiper
                 doom-modeline
+                doom-themes
+		all-the-icons
+                rainbow-delimiters
+                helpful
+		hydra
                 # (treesit-grammars.with-grammars
                 #   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
               ];
