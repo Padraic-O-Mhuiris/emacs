@@ -2,12 +2,18 @@
 
 My custom emacs config
 
-* Links
+* Project
+** Emacs Keybindings
+
+- ~C-g~ - keyboard quit, useful for quitting long running processes, similar to how ~ESC~ works
+
+** Links
 
 - https://github.com/tecosaur/emacs-config/blob/master/config.org
-- https://github.com/MatthewZMD/.emacs.d/blob/master/init.org
+- https://github.com/MatthewZMD/.emacs.d/blob/master/init.orgA
+- https://sachachua.com/dotemacs/index.html#org5786d6b
 
-* TODOs
+** TODOs
 ** PROJ Can this be tangled into an init.el using org-babel rather than using nix parsing
 
 Could also be used to directly construct the default.el to avoid any nix parsing
@@ -15,13 +21,60 @@ Could also be used to directly construct the default.el to avoid any nix parsing
 *** DONE Run org-babel-tangle as an executable script through emacs
 *** TODO Put the tangled init.el file in a home-manager module such that it is correctly created
 *** DONE For testing purposes write a script which uses --init-directory under /tmp and symlink the init.el
+** IDEA Repurpose this repo as part of my emacs notes
+** IDEA Enable a custom.[org|el] for defining experimental behaviour which is loaded from the user directory
 
+* General Configuration
 
-* Defaults
+** User Interface
 
-Listed here is the general uncategorized emacs default configuration
+Remove unneccessary UI elements for a minimal look and feel
 
-** User Configuration
+#+begin_src emacs-lisp :tangle init.el
+(setq inhibit-startup-message t)
+
+(scroll-bar-mode 1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 10)
+(menu-bar-mode -1)
+
+(setq visible-bell t)
+#+end_src
+
+#+RESULTS:
+: t
+
+** Fonts
+
+#+begin_src emacs-lisp :tangle init.el
+(set-face-attribute 'default nil :font "Iosevka NFM" :height 120)
+#+end_src
+
+#+RESULTS:
+
+*** TODO Inject on a home-module basis
+
+**  Theme
+
+#+begin_src emacs-lisp :tangle init.el
+(load-theme 'tango-dark)
+#+end_src
+
+#+RESULTS:
+: t
+
+** Use-package
+
+Packages are always defined by the nix package manager so we should never have any remote fetching
+
+#+begin_src emacs-lisp :tangle init.el
+(setq use-package-always-ensure t)
+#+end_src
+
+*** TODO Is there a way to stifle use-package such that the emacs process can never fetch remote repositories?
+
+** User and System Configuration
 
 Defaults for users name and email
 
@@ -30,8 +83,52 @@ Defaults for users name and email
       user-mail-address "patrick.morris.310@gmail.com")
 #+end_src
 
-** Use-package example
+#+begin_src emacs-lisp :tangle init.el
+;; (defvar my-laptop-p (equal (system-name) "sacha-x220"))
+;; (defvar my-server-p (and (equal (system-name) "localhost") (equal user-login-name "sacha")))
+;; (defvar my-phone-p (not (null (getenv "ANDROID_ROOT")))
+;;   "If non-nil, GNU Emacs is running on Termux.")
+;; (when my-phone-p (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+;; (global-auto-revert-mode)  ; simplifies syncing
+#+end_src
+
+*** TODO Configure here a way to inject system configuration structure through home-manager
+
+* Evil
+
+[[https://github.com/emacs-evil/evil][Evil]] is a vim emulation layer built into emacs enabling common vim motions. Documentation can be found [[https://evil.readthedocs.io/en/latest/overview.html-via-package-el][here]].
+
+- [[https://github.com/noctuid/evil-guide][GitHub - noctuid/evil-guide: Draft of a guide for using emacs with evil]]
 
 #+begin_src emacs-lisp :tangle init.el
-(use-package evil)
+(use-package evil
+  :config
+  (evil-mode 1))
 #+end_src
+
+* General.el
+
+[[https://github.com/noctuid/general.el][General.el]] is intended, like use-package is for packages, a convenient, unified mechanism for managing keybindings.
+
+#+begin_src emacs-lisp :tangle init.el
+(defconst leader "SPC")
+
+;; (use-package general
+;;     :config
+;;      (general-create-definer leader
+;;         :prefix leader)
+;;      (leader
+;;       "a" 'org-agenda))
+#+end_src
+
+* Which-key
+
+#+begin_src emacs-lisp :tangle init.el
+(use-package which-key
+   :config
+    (which-key-mode))
+#+end_src
+
+* Utilities
+
+This section is just for helpful functions which should be prefixed with ~my/~ in order to separate from normal elisp functions

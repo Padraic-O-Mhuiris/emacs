@@ -37,25 +37,42 @@
               with epkgs; [
                 use-package
                 evil
-                (treesit-grammars.with-grammars
-                  (g: with g; [ tree-sitter-rust tree-sitter-python ]))
+                general
+                which-key
+                command-log-mode
+                ivy
+                counsel
+                swiper
+                doom-modeline
+                # (treesit-grammars.with-grammars
+                #   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
               ];
           };
+
+          literate-emacs = pkgs.writeShellScriptBin "emacs" ''
+            TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
+            cd $TMP_DIR
+            ln -s ${./README.org} "$TMP_DIR/README.org"
+            ${tangle}/bin/tangle ./README.org
+            ls $TMP_DIR
+            cd -
+
+            ${emacs}/bin/emacs --init-directory $TMP_DIR $@
+          '';
+
+          normal-emacs = pkgs.writeShellScriptBin "emacs" ''
+            TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
+            ln -s ${./init.el} "$TMP_DIR/init.el"
+            ls $TMP_DIR
+
+            ${emacs}/bin/emacs --init-directory $TMP_DIR $@
+          '';
 
         in {
 
           packages = {
             inherit emacs;
-
-            default = pkgs.writeShellScriptBin "emacs" ''
-              TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
-              cd $TMP_DIR
-              ln -s ${./README.org} "$TMP_DIR/README.org"
-              ${tangle}/bin/tangle ./README.org
-              ls $TMP_DIR
-
-              ${emacs}/bin/emacs --init-directory $TMP_DIR $@
-            '';
+            default = normal-emacs;
           };
         };
 
