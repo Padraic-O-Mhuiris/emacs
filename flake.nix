@@ -5,11 +5,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     emacs.url = "github:nix-community/emacs-overlay";
-
-    from-elisp = {
-      url = "github:o-santi/from-elisp";
-      flake = false;
-    };
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -24,38 +19,24 @@
             overlays = [ inputs.emacs.overlay ];
           };
 
-          org-tangle = block-predicate: text:
-            let
-              blocks = (pkgs.callPackage inputs.from-elisp {
-                inherit pkgs;
-              }).parseOrgModeBabel text;
-              block-to-str = (block:
-                if block-predicate { inherit (block) language flags; } then
-                  block.body
-                else
-                  "");
-            in builtins.concatStringsSep "\n" (map block-to-str blocks);
-
-          org-tangle-elisp-blocks = org-tangle ({ language, flags }:
-            let
-              is-elisp = (language == "emacs-lisp") || (language == "elisp");
-              is-tangle = if flags ? ":tangle" then
-                flags.":tangle" == "yes" || flags.":tangle" == "y"
-              else
-                false;
-            in is-elisp && is-tangle);
-
-          config = pkgs.writeText "config.el"
-            (org-tangle-elisp-blocks (builtins.readFile ./README.org));
+          tangle = pkgs.writeShellScriptBin "tangle" ''
+            emacs -Q --batch --eval "
+                 (progn
+                   (require 'ob-tangle)
+                   (dolist (file command-line-args-left)
+                     (with-current-buffer (find-file-noselect file)
+                       (org-babel-tangle))))
+               " "$@"
+          '';
 
           emacs = pkgs.emacsWithPackagesFromUsePackage {
-            inherit config;
-            alwaysEnsure = true;
-            defaultInitFile = true;
+            config = ""; # We don't want to create a default.el file
+            defaultInitFile = false;
             package = pkgs.emacs-unstable.override { withGTK3 = true; };
             extraEmacsPackages = epkgs:
-              with epkgs;
-              [
+              with epkgs; [
+                use-package
+                evil
                 (treesit-grammars.with-grammars
                   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
               ];
@@ -64,22 +45,21 @@
         in {
 
           packages = {
-            inherit config;
-            showConfig = pkgs.writeShellScriptBin "showConfig" ''
-              cat ${config}
-            '';
-
             inherit emacs;
 
             default = pkgs.writeShellScriptBin "emacs" ''
-              ${emacs}/bin/emacs -q -l ${config} $@
+              TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
+              cd $TMP_DIR
+              ln -s ${./README.org} "$TMP_DIR/README.org"
+              ${tangle}/bin/tangle ./README.org
+              ls $TMP_DIR
+
+              ${emacs}/bin/emacs --init-directory $TMP_DIR $@
             '';
           };
         };
 
-      flake = let
-
-        pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
+      flake = let pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
       in {
         inherit (inputs.nixpkgs) lib;
         inherit pkgs;

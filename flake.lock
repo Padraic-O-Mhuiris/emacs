@@ -55,22 +55,6 @@
         "type": "github"
       }
     },
-    "from-elisp": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1694631482,
-        "narHash": "sha256-fTdDUf+ITtLK/zHWDa5RCZdUj1qT/carlHrHVPuUxlo=",
-        "owner": "o-santi",
-        "repo": "from-elisp",
-        "rev": "3177e75d727232a9301822742f4d0bd23bb277c6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "o-santi",
-        "repo": "from-elisp",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1694959747,
@@ -141,7 +125,6 @@
       "inputs": {
         "emacs": "emacs",
         "flake-parts": "flake-parts",
-        "from-elisp": "from-elisp",
         "nixpkgs": "nixpkgs_2"
       }
     },
