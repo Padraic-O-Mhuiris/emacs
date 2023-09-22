@@ -164,6 +164,7 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
+
 ;; #############################################################################
 ;; projectile
 ;; #############################################################################
@@ -189,3 +190,8 @@
 (use-package magit
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+;; #############################################################################
+;; org
+;; #############################################################################
+(use-package org)

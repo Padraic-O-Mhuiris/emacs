@@ -10,19 +10,21 @@ My custom emacs config
 ** Links
 
 - https://github.com/tecosaur/emacs-config/blob/master/config.org
-- https://github.com/MatthewZMD/.emacs.d/blob/master/init.orgA
+- https://github.com/MatthewZMD/.emacs.d/blob/master/init.org
 - https://sachachua.com/dotemacs/index.html#org5786d6b
-
+- https://github.com/zachcurry/emacs-anywhere
+  
 ** TODOs
-** PROJ Can this be tangled into an init.el using org-babel rather than using nix parsing
+
+*** PROJ Can this be tangled into an init.el using org-babel rather than using nix parsing
 
 Could also be used to directly construct the default.el to avoid any nix parsing
 
-*** DONE Run org-babel-tangle as an executable script through emacs
-*** TODO Put the tangled init.el file in a home-manager module such that it is correctly created
-*** DONE For testing purposes write a script which uses --init-directory under /tmp and symlink the init.el
-** IDEA Repurpose this repo as part of my emacs notes
-** IDEA Enable a custom.[org|el] for defining experimental behaviour which is loaded from the user directory
+**** DONE Run org-babel-tangle as an executable script through emacs
+**** TODO Put the tangled init.el file in a home-manager module such that it is correctly created
+**** DONE For testing purposes write a script which uses --init-directory under /tmp and symlink the init.el
+*** IDEA Repurpose this repo as part of my emacs notes
+*** IDEA Enable a custom.[org|el] for defining experimental behaviour which is loaded from the user directory
 
 * General Configuration
 

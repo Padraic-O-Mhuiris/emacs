@@ -6,10 +6,10 @@
 
     emacs.url = "github:nix-community/emacs-overlay";
 
-    wrapper-manager = {
-      url = "github:viperML/wrapper-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # wrapper-manager = {
+    #   url = "github:viperML/wrapper-manager";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -24,15 +24,15 @@
             overlays = [ inputs.emacs.overlay ];
           };
 
-          tangle = pkgs.writeShellScriptBin "tangle" ''
-            emacs -Q --batch --eval "
-                 (progn
-                   (require 'ob-tangle)
-                   (dolist (file command-line-args-left)
-                     (with-current-buffer (find-file-noselect file)
-                       (org-babel-tangle))))
-               " "$@"
-          '';
+          # tangle = pkgs.writeShellScriptBin "tangle" ''
+          #   emacs -Q --batch --eval "
+          #        (progn
+          #          (require 'ob-tangle)
+          #          (dolist (file command-line-args-left)
+          #            (with-current-buffer (find-file-noselect file)
+          #              (org-babel-tangle))))
+          #      " "$@"
+          # '';
 
           emacs = pkgs.emacsWithPackagesFromUsePackage {
             config = ""; # We don't want to create a default.el file
@@ -59,36 +59,38 @@
                 projectile
                 counsel-projectile
                 magit
+                org
+                # forge # - is this used?
                 # (treesit-grammars.with-grammars
                 #   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
               ];
           };
 
-          wrapped-emacs = (inputs.wrapper-manager.lib.build {
-            inherit pkgs;
-            modules = [
-              ({ pkgs, ... }: {
-                wrappers.emacs = {
-                  basePackage = emacs;
-                  pathAdd = with pkgs;
-                    [ (ripgrep.override { withPCRE2 = true; }) ];
-                };
-              })
-            ];
-          });
+          # wrapped-emacs = (inputs.wrapper-manager.lib.build {
+          #   inherit pkgs;
+          #   modules = [
+          #     ({ pkgs, ... }: {
+          #       wrappers.emacs = {
+          #         basePackage = emacs;
+          #         pathAdd = with pkgs;
+          #           [ (ripgrep.override { withPCRE2 = true; }) ];
+          #       };
+          #     })
+          #   ];
+          # });
 
-          literate-emacs = pkgs.writeShellScriptBin "emacs" ''
-            TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
-            cd $TMP_DIR
-            ln -s ${./README.org} "$TMP_DIR/README.org"
-            ${tangle}/bin/tangle ./README.org
-            ls $TMP_DIR
-            cd -
+          # literate-emacs = pkgs.writeShellScriptBin "emacs" ''
+          #   TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
+          #   cd $TMP_DIR
+          #   ln -s ${./README.org} "$TMP_DIR/README.org"
+          #   ${tangle}/bin/tangle ./README.org
+          #   ls $TMP_DIR
+          #   cd -
 
-            ${emacs}/bin/emacs --init-directory $TMP_DIR $@
-          '';
+          #   ${emacs}/bin/emacs --init-directory $TMP_DIR $@
+          # '';
 
-          normal-emacs = pkgs.writeShellScriptBin "emacs" ''
+          test = pkgs.writeShellScriptBin "emacs" ''
             TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
             ln -s ${./init.el} "$TMP_DIR/init.el"
             ls $TMP_DIR
@@ -96,12 +98,7 @@
             ${emacs}/bin/emacs --init-directory $TMP_DIR $@
           '';
 
-        in {
-          packages = {
-            inherit emacs wrapped-emacs;
-            default = normal-emacs;
-          };
-        };
+        in { packages.default = emacs; };
 
       flake = let pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
       in {
