@@ -5,6 +5,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     emacs.url = "github:nix-community/emacs-overlay";
+
+    wrapper-manager = {
+      url = "github:viperML/wrapper-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -37,7 +42,7 @@
               with epkgs; [
                 use-package
                 evil
-		evil-collection
+                evil-collection
                 general
                 which-key
                 command-log-mode
@@ -47,14 +52,30 @@
                 swiper
                 doom-modeline
                 doom-themes
-		all-the-icons
+                all-the-icons
                 rainbow-delimiters
                 helpful
-		hydra
+                hydra
+                projectile
+                counsel-projectile
+                magit
                 # (treesit-grammars.with-grammars
                 #   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
               ];
           };
+
+          wrapped-emacs = (inputs.wrapper-manager.lib.build {
+            inherit pkgs;
+            modules = [
+              ({ pkgs, ... }: {
+                wrappers.emacs = {
+                  basePackage = emacs;
+                  pathAdd = with pkgs;
+                    [ (ripgrep.override { withPCRE2 = true; }) ];
+                };
+              })
+            ];
+          });
 
           literate-emacs = pkgs.writeShellScriptBin "emacs" ''
             TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
@@ -76,9 +97,8 @@
           '';
 
         in {
-
           packages = {
-            inherit emacs;
+            inherit emacs wrapped-emacs;
             default = normal-emacs;
           };
         };

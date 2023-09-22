@@ -125,7 +125,8 @@
       "inputs": {
         "emacs": "emacs",
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "wrapper-manager": "wrapper-manager"
       }
     },
     "systems": {
@@ -140,6 +141,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "wrapper-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1691847782,
+        "narHash": "sha256-o442oJ4F6tcPYmd6wiC/lnjiq7r8ANa4vPpMGB3/MKk=",
+        "owner": "viperML",
+        "repo": "wrapper-manager",
+        "rev": "ec1cf6abbf017bd17c3e24e8dddbefe4b445b569",
+        "type": "github"
+      },
+      "original": {
+        "owner": "viperML",
+        "repo": "wrapper-manager",
         "type": "github"
       }
     }

@@ -83,7 +83,7 @@
   ("f" nil "finished" :exit t))
 
 (pm/leader-key-def
-  "ts" '(hydra-text-scale/body :which-key "scale text"))
+ "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 ;; #############################################################################
 ;; doom-modeline
@@ -163,3 +163,29 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
+
+;; #############################################################################
+;; projectile
+;; #############################################################################
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/code")
+    (setq projectile-project-search-path '("~/code")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :after projectile
+  :config (counsel-projectile-mode))
+
+;; #############################################################################
+;; magit
+;; #############################################################################
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
