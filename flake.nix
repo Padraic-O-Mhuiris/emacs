@@ -6,10 +6,10 @@
 
     emacs.url = "github:nix-community/emacs-overlay";
 
-    # wrapper-manager = {
-    #   url = "github:viperML/wrapper-manager";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    wrapper-manager = {
+      url = "github:Padraic-O-Mhuiris/wrapper-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -66,18 +66,32 @@
               ];
           };
 
-          # wrapped-emacs = (inputs.wrapper-manager.lib.build {
-          #   inherit pkgs;
-          #   modules = [
-          #     ({ pkgs, ... }: {
-          #       wrappers.emacs = {
-          #         basePackage = emacs;
-          #         pathAdd = with pkgs;
-          #           [ (ripgrep.override { withPCRE2 = true; }) ];
-          #       };
-          #     })
-          #   ];
-          # });
+          wrapped-emacs = (inputs.wrapper-manager.lib.build {
+            inherit pkgs;
+            modules = [
+              ({ pkgs, ... }: {
+                wrappers.emacs = {
+                  basePackage = emacs;
+                  pathAdd = with pkgs; [
+                    (ripgrep.override { withPCRE2 = true; })
+                    shellcheck
+                    shfmt
+                    fd
+                    (aspellWithDicts
+                      (dicts: with dicts; [ en en-computers en-science ]))
+                    emacsPackages.editorconfig
+                    terraform
+                    graphviz
+                    maim
+                    html-tidy
+                    nodePackages_latest.stylelint
+                    nodePackages_latest.js-beautify
+                    nixfmt
+                  ];
+                };
+              })
+            ];
+          });
 
           # literate-emacs = pkgs.writeShellScriptBin "emacs" ''
           #   TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
@@ -95,10 +109,10 @@
             ln -s ${./init.el} "$TMP_DIR/init.el"
             ls $TMP_DIR
 
-            ${emacs}/bin/emacs --init-directory $TMP_DIR $@
+            ${wrapped-emacs}/bin/emacs --init-directory $TMP_DIR $@
           '';
 
-        in { packages.default = emacs; };
+        in { packages.default = test; };
 
       flake = let pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
       in {
