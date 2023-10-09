@@ -7,3 +7,11 @@ result/
 result
 
 README.el
+.local/
+
+auto-save-list/
+eln-cache/
+elpa/
+history
+straight/
+transient/

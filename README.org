@@ -13,6 +13,7 @@ My custom emacs config
 - https://github.com/MatthewZMD/.emacs.d/blob/master/init.org
 - https://sachachua.com/dotemacs/index.html#org5786d6b
 - https://github.com/zachcurry/emacs-anywhere
+- https://github.com/d12frosted/environment/tree/master/emacs
   
 ** TODOs
 
