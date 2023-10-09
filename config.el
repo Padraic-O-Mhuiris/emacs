@@ -28,6 +28,11 @@
 
 (setq make-backup-files nil)
 
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+
 (set-face-attribute 'default nil :font "Iosevka NFM" :height 100)
 
 (use-package doom-themes  
@@ -68,7 +73,14 @@
   ;; Tab should do indent in code blocks
   (setq org-src-tab-acts-natively t)
   ;; Give quote and verse blocks a nice look.
-  (setq org-fontify-quote-and-verse-blocks t))
+  (setq org-fontify-quote-and-verse-blocks t)
+  
+  (setq org-hide-emphasis-markers t)
+  (setq org-startup-indented t)
+  (use-package org-bullets
+    :straight
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))))
 
 (use-package org-tempo
   :ensure nil 

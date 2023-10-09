@@ -4,7 +4,17 @@
 
 - http://alhassy.com/emacs.d/index.html
 - https://gitlab.com/public-repositories/emacs-groundup
+- https://github.com/alphapapa/unpackaged.el
+- http://honnef.co/articles/my-org-roam-workflows-for-taking-notes-and-writing-articles
+- https://karelvo.com/blog/2023-02-17-orgmode
+- https://www.brettwitty.net/exocortex.html
   
+  
+* TODOs
+** TODO Enable ~C-Enter~ in a list to create a new item in that list
+Currently will only put a new org heading relative to the nearest one
+https://github.com/alphapapa/unpackaged.el#org-return-dwim
+
 * Basic Settings
 
 Here are a collection of random improvements to base emacs
@@ -73,6 +83,13 @@ Decide what buffers should be opened by default. When customising emacs it is ea
 
 #+begin_src emacs-lisp
 (setq make-backup-files nil)
+#+end_src
+** utf8
+#+begin_src emacs-lisp
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
 #+end_src
 * Display
 
@@ -149,7 +166,14 @@ Use rainbow colors to match parens
     ;; Tab should do indent in code blocks
     (setq org-src-tab-acts-natively t)
     ;; Give quote and verse blocks a nice look.
-    (setq org-fontify-quote-and-verse-blocks t))
+    (setq org-fontify-quote-and-verse-blocks t)
+    
+    (setq org-hide-emphasis-markers t)
+    (setq org-startup-indented t)
+    (use-package org-bullets
+      :straight
+      :config
+      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))))
 #+end_src 
 
 ** Enable automatic structure templates
