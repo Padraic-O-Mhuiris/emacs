@@ -42,6 +42,8 @@
               with epkgs; [
 	      corfu
 	      orderless
+	      ace-window
+              no-littering
                 evil
                 evil-collection
                 general
