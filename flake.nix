@@ -6,6 +6,7 @@
 
     emacs.url = "github:nix-community/emacs-overlay";
 
+
     wrapper-manager = {
       url = "github:Padraic-O-Mhuiris/wrapper-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -40,29 +41,30 @@
             package = pkgs.emacs-unstable.override { withGTK3 = true; };
             extraEmacsPackages = epkgs:
               with epkgs; [
-	      corfu
-	      orderless
-	      ace-window
-              no-littering
+		            embark
+		            embark-consult
+		            esup
+		            highlight-numbers
+		            marginalia
+		            org-bullets
+		            smartparens
+		            undo-tree
+		            vertico
+	              ace-window
+	              corfu
+	              orderless
+                all-the-icons
+                doom-modeline
+                doom-themes
                 evil
                 evil-collection
                 general
-                which-key
-		undo-tree
-		embark
-		embark-consult
-		vertico
-		marginalia
-                doom-modeline
-                doom-themes
-                all-the-icons
-                rainbow-delimiters
                 magit
+                nix-mode
+                no-littering
                 org
-		org-bullets
-		highlight-numbers
-		smartparens
-		esup
+                rainbow-delimiters
+                which-key
               ];
           };
 
@@ -111,9 +113,9 @@
         in { packages.default = wrapped-emacs; };
 
       flake = let pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
-      in {
-        inherit (inputs.nixpkgs) lib;
-        inherit pkgs;
-      };
+              in {
+                inherit (inputs.nixpkgs) lib;
+                inherit pkgs;
+              };
     };
 }

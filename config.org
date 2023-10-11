@@ -469,7 +469,7 @@ For keybindings which haven't found their place in the config.
     "u" '(:ignore t :which-key "ui")
     "ut" '(counsel-load-theme :which-key "Select Theme")
     "m" '(:ignore t :which-key "magit")
-    "mm" '(magit-status-here :which-key "status"))
+    "mm" '(magit-status-quick :which-key "status"))
 #+end_src
 
 *** Esc Acts as Quit
@@ -947,7 +947,14 @@ Especially useful for lisping
 (require 'smartparens)
 (add-hook 'prog-mode-hook 'smartparens-mode)
 #+end_src
+** Nix
 
+Nix is a nice language
+
+#+begin_src emacs-lisp
+(require 'nix-mode)
+(add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+#+end_src
 * Utilities/Tools
 
 ** Profiling
