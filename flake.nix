@@ -40,29 +40,27 @@
             package = pkgs.emacs-unstable.override { withGTK3 = true; };
             extraEmacsPackages = epkgs:
               with epkgs; [
-                use-package
+	      corfu
+	      orderless
                 evil
                 evil-collection
                 general
                 which-key
-                command-log-mode
-                ivy
-                ivy-rich
-                counsel
-                swiper
+		undo-tree
+		embark
+		embark-consult
+		vertico
+		marginalia
                 doom-modeline
                 doom-themes
                 all-the-icons
                 rainbow-delimiters
-                helpful
-                hydra
-                projectile
-                counsel-projectile
                 magit
                 org
-                # forge # - is this used?
-                # (treesit-grammars.with-grammars
-                #   (g: with g; [ tree-sitter-rust tree-sitter-python ]))
+		org-bullets
+		highlight-numbers
+		smartparens
+		esup
               ];
           };
 
@@ -104,15 +102,11 @@
           #   ${emacs}/bin/emacs --init-directory $TMP_DIR $@
           # '';
 
-          test = pkgs.writeShellScriptBin "emacs" ''
-            TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
-            ln -s ${./init.el} "$TMP_DIR/init.el"
-            ls $TMP_DIR
+          # my-emacs = pkgs.writeShellScriptBin "emacs" ''
+          #   ${wrapped-emacs}/bin/emacs --debug-init $@ 
+          # '';
 
-            ${wrapped-emacs}/bin/emacs --init-directory $TMP_DIR $@
-          '';
-
-        in { packages.default = test; };
+        in { packages.default = wrapped-emacs; };
 
       flake = let pkgs = (inputs.nixpkgs.legacyPackages.x86_64-linux);
       in {

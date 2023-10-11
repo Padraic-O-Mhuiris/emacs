@@ -1,39 +1,176 @@
 #+title: Emacs Configuration
 
-* Links
+This is my literate emacs confguration which I intend to use for all of my computing needs.
+
+* Notes
+** Package Management
+
+This is where this configuration differs from most others. Emacs has a wide variety of package management solutions, internally like ~package.el~ or externally like ~use-package~ or ~straight.el~. However, the problem persists is that any emacs configuration has implied external dependencies, say nodejs for writing javascript projects.
+Where I differ is that I use Nix to manage both of the elisp package dependencies and the external dependencies. This is the general rule but a large exception is where software projects using Nix also maintain their own dependencies using shell hooks. This would also be a good idea to incorporate where a project buffer rationalises whethers the project is /"nixified"/ and if not will attempt to download those dependencies, or at least make the user aware that it is not available.
+Not to digress, because the elisp packages are pre-installed, all that has to be done is to ~require~ them in a file and so removes a lot of unneccessary juggling of ~use-package~.
+
+As this is a nixified emacs literate config, I use a flake to define an emacs package which contains all required dependencies. This may also be moved to inside my notes as externally referencing pieces of my configuration could be useful for blogging/research.
+
+One pain point which may manifest is that the emacs-overlay which the flake uses becomes unmaintained or does not declare a package I want. A workaround could be to use ~straight.el~.
+
+** Links
 
 - http://alhassy.com/emacs.d/index.html
 - https://gitlab.com/public-repositories/emacs-groundup
 - https://github.com/alphapapa/unpackaged.el
 - http://honnef.co/articles/my-org-roam-workflows-for-taking-notes-and-writing-articles
 - https://karelvo.com/blog/2023-02-17-orgmode
+- https://www.sobyte.net/post/2022-05/emacs-package/
 - https://www.brettwitty.net/exocortex.html
+- https://github.com/technomancy/emacs-starter-kit  
+- https://nullprogram.com/blog/2017/01/30/
+- Prefer custom-set-variable(s) over setq https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
+- Similar to above, use setopt for emacs 29+ https://emacs.stackexchange.com/questions/78419/im-unsure-which-option-to-use-for-setting-a-variable-setq-customize-set-varia/78424#78424
+- https://github.com/frap/emacs-literate
+- Uses nix! https://panadestein.github.io/emacsd/
+- https://github.com/rougier/dotemacs/blob/master/dotemacs.org
   
-  
-* TODOs
-** TODO Enable ~C-Enter~ in a list to create a new item in that list
+** TODOs
+*** TODO Enable ~C-Enter~ in a list to create a new item in that list
 Currently will only put a new org heading relative to the nearest one
 https://github.com/alphapapa/unpackaged.el#org-return-dwim
+*** TODO Text wrapping in org-mode doc uments
+*** TODO Elisp linting and formatting
+*** TODO org-mode code blocks indenting
+*** TODO Add olivetti mode
+* Configuration
 
-* Basic Settings
+Remove this top-level heading when finished 
 
-Here are a collection of random improvements to base emacs
+** Introduction
 
-** UI Enhancements
+*** TODO Explain purpose of this document
 
-Mostly removes unneccesary default Emacs UI elements.
+*** Useful Links
+
+- http://alhassy.com/emacs.d/index.html
+- https://gitlab.com/public-repositories/emacs-groundup
+- https://github.com/alphapapa/unpackaged.el
+- http://honnef.co/articles/my-org-roam-workflows-for-taking-notes-and-writing-articles
+- https://karelvo.com/blog/2023-02-17-orgmode
+- https://www.sobyte.net/post/2022-05/emacs-package/
+- https://www.brettwitty.net/exocortex.html
+- https://github.com/technomancy/emacs-starter-kit  
+- https://nullprogram.com/blog/2017/01/30/
+- Prefer custom-set-variable(s) over setq https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
+- Similar to above, use setopt for emacs 29+ https://emacs.stackexchange.com/questions/78419/im-unsure-which-option-to-use-for-setting-a-variable-setq-customize-set-varia/78424#78424
+- https://github.com/frap/emacs-literate
+- Uses nix! https://panadestein.github.io/emacsd/
+
+** Prerequisites
+
+Firstly, the configuration listed here should be executed first
+
+*** Emacs Configuration Header
+
+Emacs has a [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][convention]] which must be complied with when publishing elisp code.
 
 #+begin_src emacs-lisp
-  (setq inhibit-startup-message t)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
-  (tooltip-mode -1)
-  (set-fringe-mode 10)
-  (menu-bar-mode -1)
-  (setq visible-bell t)
-#+end_src 
+;;; init.el --- Padraic's Emacs configuration -*- lexical-binding: t -*-
 
-** User Details
+;; Copyright (C) 2023-2023 Patrick H Morris
+
+;; Author: Patrick H Morris <patrick.morris.310@gmail.com>
+;; Keywords: internal
+;; URL: https://panadestein.github.io/emacsd/
+
+;;; Commentary:
+;; A fully fledged, reproducible Emacs configuration
+
+;;; Code:
+#+end_src
+
+Note that this also specifies the usage of lexical binding. See https://nullprogram.com/blog/2016/12/22/ for an explaination. This should always be placed at the top of the file.
+
+*** Disable Magic File Names on Startup
+
+The ~file-name-handler-alist~ is a special variable containing lookup keys for handlers when accessing a particular file, it's not used at startup so we can disable it temporarily.
+
+#+begin_src emacs-lisp
+(defvar file-name-handler-alist-original file-name-handler-alist)
+(setq file-name-handler-alist nil)
+#+end_src
+
+Restore it later using the ~emacs-startup-hook~
+
+#+begin_src emacs-lisp
+(add-hook 'emacs-startup-hook
+  (lambda ()
+    (setq file-name-handler-alist file-name-handler-alist-original)))
+#+end_src
+
+*** Garbage Collection
+
+We set the gc threshold to ~most-positive-fixnum~, which is the largest representable positive integer in elisp. Also increasing ~gc-cons-percentage~ increases memory usage before garbage collection.
+
+#+begin_src emacs-lisp
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
+#+end_src
+
+Assign variable for the desired gc threshold
+
+#+begin_src emacs-lisp
+(defvar pm/gc-cons-threshold 100000000)
+#+end_src
+
+Reset gc once emacs has initialised
+
+#+begin_src emacs-lisp
+(add-hook 'emacs-startup-hook ; hook run after loading init files
+          (lambda ()
+            (setq gc-cons-threshold pm/gc-cons-threshold
+                  gc-cons-percentage 0.1
+                  file-name-handler-alist file-name-handler-alist-original)))
+#+end_src
+
+Ensure minibuffer operations are smooth
+
+#+begin_src emacs-lisp
+(add-hook 'minibuffer-setup-hook (lambda ()
+                                   (setq gc-cons-threshold (* pm/gc-cons-threshold 2))))
+(add-hook 'minibuffer-exit-hook (lambda ()
+                                  (garbage-collect)
+                                  (setq gc-cons-threshold pm/gc-cons-threshold)))
+#+end_src
+
+*** Native Compilation
+
+Check if native compilation is available for this emacs instance and if so configures native compilation settings and the path for where the compiled elisp files are stored which is the users emacs directory.
+
+#+begin_src emacs-lisp
+  (when (and (fboundp 'native-comp-available-p) (native-comp-available-p))
+    (progn
+      (setq native-comp-async-report-warnings-errors nil)
+      (setq native-comp-deferred-compilation t)
+      (add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
+      (setq package-native-compile t)))
+#+end_src
+
+This block might be unnecessary.
+
+*** Initialization Flag
+
+This is a useful variable which can be used to mitigate issues surrounding reloading of the confi
+
+#+begin_src emacs-lisp
+  (defvar pm/initialized nil)
+
+  (add-hook 'emacs-startup-hook
+  	  (lambda ()
+  	    (setq pm/initialized t)))
+#+end_src
+
+** Basic Emacs Settings
+
+Modifications to the default emacs settings should exist here. No external package should be referenced.
+
+*** Personal Configuration
 
 Basic user information
 
@@ -42,7 +179,50 @@ Basic user information
         user-mail-address "patrick.morris.310@gmail.com")
 #+end_src 
 
-** Startup Buffer Choice
+*** Init Files
+
+Emacs has a variety of conventions of files which should be loaded and where certain configuration can exist. Anything related to that behaviour should go here
+
+**** Default.el
+
+This is quite important in context of how this emacs configuration is defined. This file may be used to generate a ~default.el~ file which is custom packaged with emacs. In such cases, having this setting be true would prevent that file from loading.
+
+#+begin_src emacs-lisp
+(setq inhibit-default-init t)
+#+end_src
+
+**** Custom.el
+
+Define the custom file to exist within the user's emacs directory
+
+#+begin_src emacs-lisp
+(let ((customization-file
+       (expand-file-name "custom.el" user-emacs-directory)))
+  (unless (file-exists-p customization-file)
+    (write-region "" nil customization-file))
+  (setq custom-file customization-file)
+  (load custom-file 'noerror))
+#+end_src
+
+https://panadestein.github.io/emacsd/#orgaf16e18
+
+*** Startup
+
+Prevent the startup screen containing Emacs specific content/documentation/links
+
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+#+end_src
+
+Prevent the echo area startup message. ~inhibit-startup-echo-area-message~ has little to no affect, maybe for advertising reasons, either way the source of the message is in the function ~display-startup-echo-area-message~ which is overrided here in order to change the message.
+
+#+begin_src emacs-lisp
+   ;; (setq inhibit-startup-echo-area-message "Hello!!!")
+  (defun display-startup-echo-area-message ()
+    (display-startup-time))
+#+end_src
+
+**** Initial Buffer
 
 Decide what buffers should be opened by default. When customising emacs it is easiest to open this file and the messages buffer for any information
 
@@ -53,583 +233,719 @@ Decide what buffers should be opened by default. When customising emacs it is ea
   ;; 	    (split-window-right) ; Split the window vertically
   ;; 	    (other-window 1)          ; Move to the new split pane
   ;; 	    (switch-to-buffer "*Messages*"))) 
-#+end_src 
+#+end_src
+**** Scratch Buffer
 
-*** TODO Use ~user-emacs-directory~ instead of a static path
-
-** Refresh Buffers on file mutation
+Make the scratch buffer empty by default
 
 #+begin_src emacs-lisp
-(global-auto-revert-mode t)
+(setq initial-scratch-message nil)
 #+end_src
 
-** Initialization flag
+*** File/Buffer/Text Behaviour
+
+Configuration pertaining to global file behaviour should go here
+
+**** Large File Warnings
+Warn when opening files greater than 100MB
 
 #+begin_src emacs-lisp
-  (defvar pm/initialized nil)
-
-  (add-hook 'emacs-startup-hook
-  	  (lambda ()
-  	    (setq pm/initialized t)))
+(setq large-file-warning-threshold 100000000)
 #+end_src
 
-** Yes-or-No
+**** Respect File Mutation
+
+Should a file be modified outside of Emacs, always respect those changes. Also check for file changes every second, if this becomes an issue for performance, increase
 
 #+begin_src emacs-lisp
-(defalias 'yes-or-no-p 'y-or-n-p)
+  (global-auto-revert-mode t)
+  (setq auto-revert-interval 1)
 #+end_src
 
-** Backup Files
+**** Always use UTF8
 
-#+begin_src emacs-lisp
-(setq make-backup-files nil)
-#+end_src
-** utf8
 #+begin_src emacs-lisp
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 #+end_src
-* Display
 
-Emacs configuration under this pertains mainly to UI enhancments
+**** Long Line Handling
 
-** Font
+Emacs has historically had issues with files with extremely long lines
 
-Iosevka is a nice font, defined at startup so 
+#+begin_src emacs-lisp
+(require 'so-long)
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'default nil :font "Iosevka NFM" :height 100)
-#+END_SRC 
+Add the global mode once initialisation has finished
 
-** Theme
+#+begin_src emacs-lisp
+(add-hook 'after-init-hook 'global-so-long-mode)
+#+end_src
+
+**** Don't Make Backups
+
+#+begin_src emacs-lisp
+(setq make-backup-files nil)
+#+end_src
+
+*** UI
+
+**** Remove Features
+
+Emacs by default comes with a clunky ugly interface, remove those features.
+
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (set-fringe-mode 10)
+  (menu-bar-mode -1)
+#+end_src
+
+**** Bell Modifications
+
+Emacs comes with an audible bell sound when a user does someting erroneous. Having this be a visual feature is preferred.
+
+#+begin_src emacs-lisp
+  (setq visible-bell t)
+#+end_src
+
+Disable it to be sure
+
+#+begin_src emacs-lisp
+(setq ring-bell-function 'ignore)
+#+end_src
+
+**** Mitigate Blinking Cursor
+
+#+begin_src emacs-lisp
+(blink-cursor-mode -1)
+#+end_src
+**** Scrolling
+
+#+begin_src emacs-lisp
+(setq scroll-margin 0
+      scroll-conservatively 100000
+      scroll-preserve-screen-position 1)
+#+end_src
+*** Y/N
+
+Ensure all yes/no type queries can be answered with y/n
+
+#+begin_src emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+*** Debugging
+
+Emacs enables debugging using the ~--debug-init~ flag. The configuration below increases the verbosity of warnings in such contexts.
+
+#+begin_src emacs-lisp
+ (if init-file-debug
+      (setq warning-minimum-level :debug)
+    (setq warning-minimum-level :emergency))
+#+end_src
+*** History
+
+~savehist~ (short for "save history") is a built-in feature of Emacs that allows you to persistently save various history lists across Emacs sessions. This means that things like your command history, search history, and other similar histories can be remembered even after you close and restart Emacs.
+
+#+begin_src emacs-lisp
+  (require 'savehist)
+  (savehist-mode)
+#+end_src
+
+** Display
+
+Configuration regarding the emacs appearence should go here
+*** Theme
 
 doom-themes is a popular collection of emacs themes. 
 
 #+begin_src emacs-lisp
-  (use-package doom-themes  
-    :straight t
-    :after general
-    :config
-    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-	doom-themes-enable-italic t) ; if nil, italics is universally disabled
-    (unless pm/initialized (load-theme 'doom-moonlight t)) ; only call on initialization
-    (doom-themes-visual-bell-config)
-    (doom-themes-org-config))
-#+end_src
+  (require 'doom-themes)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-** Modeline
+  (unless pm/initialized (load-theme 'doom-moonlight t)) ; only call on initialization
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config)
+
+#+end_src
+*** Font
+
+Iosevka is a nice font
 
 #+begin_src emacs-lisp
-  (use-package doom-modeline  
-    :straight t
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15))
-    :config
-    (use-package all-the-icons
-      :straight t))
-#+end_src
-
-** Line Numbers
-
-List line-numbers by default in most contexts
-
-#+begin_src emacs-lisp
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
-  (dolist (mode '(org-mode-hook 
-  			  term-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-#+end_src
-
-** Delimiters
-
-Use rainbow colors to match parens
-
-#+begin_src emacs-lisp
-  (use-package rainbow-delimiters  
-    :straight t
-    :hook (prog-mode . rainbow-delimiters-mode))
-#+end_src
-
-* Org
-
-#+begin_src emacs-lisp
-  (use-package org
-    :straight t
-    :config
-    ;; Replace the content marker, “⋯”, with a nice unicode arrow.
-    (setq org-ellipsis " ⤵")
-    ;; Avoid accidentally editing folded regions, say by adding text after an Org “⋯”.
-    (setq org-catch-invisible-edits t)
-    ;; Tab should do indent in code blocks
-    (setq org-src-tab-acts-natively t)
-    ;; Give quote and verse blocks a nice look.
-    (setq org-fontify-quote-and-verse-blocks t)
-    
-    (setq org-hide-emphasis-markers t)
-    (setq org-startup-indented t)
-    (use-package org-bullets
-      :straight
-      :config
-      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))))
+  (set-face-attribute 'default nil :font "Iosevka NFM" :height 100)
 #+end_src 
 
-** Enable automatic structure templates
+*** Icons
+
+#+begin_src emacs-lisp
+(require 'all-the-icons)
+#+end_src
+
+*** Modeline
+
+Also borrowing from the doom collection
+
+#+begin_src emacs-lisp
+  (require 'doom-modeline)
+  (doom-modeline-mode 1)
+  (setq doom-modeline-height 55)
+  (setq doom-modeline-buffer-file-name-style 'relative-to-project)
+  (setq doom-line-numbers-style 'relative)
+  (setq doom-modeline-major-mode-icon t)
+  (setq doom-modeline-buffer-state-icon t)
+  (setq doom-modeline-major-mode-color-icon t)
+#+end_src
+*** Windows
+**** Fringe
+
+The "fringe" is the narrow vertical areas on either side of windows
+
+#+begin_src elisp
+(set-fringe-mode 10)
+#+end_src
+
+** Keybindings
+
+All keybind configuration goes here
+
+*** ~general.el~
+
+~general~ is a keybinding framework for emacs and is complementary to evil mode users. ~SPC~ will be a global key to manage a lot of behaviour
+
+#+begin_src emacs-lisp
+  (require 'general)
+  (general-evil-setup t)
+
+  (general-create-definer pm/leader
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+#+end_src
+
+*** ~which-key~
+
+~which-key~ enhances the Emacs experience by providing real-time, interactive feedback on keybindings, making it easier to navigate and use the vast array of commands and functionalities available in the editor.
+
+#+begin_src emacs-lisp
+  (require 'which-key)
+  (which-key-mode)
+  (setq which-key-idle-delay 0)
+#+end_src
+*** Global Keybindings
+
+Here is a space for defining all global keybindings
+
+**** Bucket
+
+For keybindings which haven't found their place in the config.
+
+#+begin_src emacs-lisp
+  (pm/leader
+    "r" '(pm/reload-config :which-key "Reload config")
+    "u" '(:ignore t :which-key "ui")
+    "ut" '(counsel-load-theme :which-key "Select Theme")
+    "m" '(:ignore t :which-key "magit")
+    "mm" '(magit-status-here :which-key "status"))
+#+end_src
+
+**** Esc Acts as Quit
+
+By default, ~C-g~ will quit a process which is slightly more work than ~<escape>~
+
+#+begin_src emacs-lisp
+  (general-define-key
+   "<escape>" 'keyboard-escape-quit)
+#+end_src
+
+** Editing
+File editing is the most important thing an editor does right?!?!
+*** ~evil~
+
+For those who like to use vim in emacs
+
+#+begin_src emacs-lisp
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  (setq evil-undo-system 'undo-tree)
+
+  (require 'evil)
+  (evil-mode 1)
+
+  (require 'evil-collection)
+  (evil-collection-init)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal)
+#+end_src
+
+#+begin_src emacs-lisp
+  (general-def 'evil-insert-state-map
+    "C-g" 'evil-normal-state
+    "C-h" 'evil-delete-backward-char-and-join)
+
+  (general-define-key 
+   :states 'motion
+    "j" 'evil-next-visual-line
+    "k" 'evil-previous-visual-line)
+#+end_src
+
+*** ~undo-tree~
+
+A very nice visualisation tool for tracing file changes in a tree hierarchy
+
+#+begin_src emacs-lisp
+  (require 'undo-tree)
+  (general-define-key
+   "C-x u" 'undo-tree-visualize)
+
+  (global-undo-tree-mode)
+  (setq undo-tree-visualizer-timestamps t)
+  (setq undo-tree-visualizer-diff t)
+#+end_src
+
+** Git
+*** ~magit~
+
+The best git gui ever made
+
+#+begin_src emacs-lisp
+  (require 'magit)
+  (setopt magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1) ; What does this do?
+#+end_src
+
+** Org
+
+The best markup language ever made
+
+#+begin_src emacs-lisp
+  (require 'org)
+  (require 'org-bullets)
+
+  ;; Replace the content marker, “⋯”, with a nice unicode arrow.
+  (setq org-ellipsis " ⤵")
+  ;; Avoid accidentally editing folded regions, say by adding text after an Org “⋯”.
+  (setq org-catch-invisible-edits t)
+  ;; Tab should do indent in code blocks
+  (setq org-src-tab-acts-natively t)
+  ;; Give quote and verse blocks a nice look.
+  (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-hide-emphasis-markers t)
+  (setq org-startup-indented t)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src 
+
+*** Enable Tab Completion for Code Blocks
 
 Since org-mode 9.2, the completion ~<s TAB~ does not work out of the box and so org-tempo is required
 
 Also adds the completion for elisp source code blocks using ~<el TAB~
 
 #+begin_src emacs-lisp
-  (use-package org-tempo
-    :ensure nil 
-    :after org
-    :config
-    (add-to-list 'org-structure-template-alist
-  		 '("el" . "src emacs-lisp")))
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist
+                         '("el" . "src emacs-lisp"))
 #+end_src
 
-* General
+*** Text Wrapping
 
-general is a keybinding framework for emacs and is complementary to evil mode users
+Ensure that lines automatically wrap around the screen
 
 #+begin_src emacs-lisp
-  (use-package general
-    :straight t
-    :config
-    (general-evil-setup t)
+  (add-hook 'org-mode-hook #'(lambda ()
 
-    (general-define-key
-     "<escape>" 'keyboard-escape-quit
-     "C-M-j" 'counsel-switch-buffer)
+                             ;; make the lines in the buffer wrap around the edges of the screen.
 
-    (general-create-definer pm/leader-key-def
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-
-    (pm/leader-key-def
-      "r" '(pm/reload-config :which-key "Reload config")
-      "u" '(:ignore t :which-key "ui")
-      "ut" '(counsel-load-theme :which-key "magit")
-      "m" '(:ignore t :which-key "magit")
-      "mm" '(magit-status-here :which-key "status")))
+                             ;; to press C-c q  or fill-paragraph ever again!
+                             (visual-line-mode)
+                             (org-indent-mode)))
 #+end_src
-
-* Evil
-
-#+begin_src emacs-lisp
-  (use-package evil  
-      :straight t
-      :after undo-tree
-      :init
-      (setq evil-want-integration t)
-      (setq evil-want-keybinding nil)
-      (setq evil-want-C-u-scroll t)
-      (setq evil-want-C-i-jump nil)
-      (setq evil-undo-system 'undo-tree)
-      :config
-      (evil-mode 1)
-      (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-      (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-
-      (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-      (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-
-      (evil-set-initial-state 'messages-buffer-mode 'normal)
-      (evil-set-initial-state 'dashboard-mode 'normal))
-
-    (use-package evil-collection  
-      :straight t
-      :after evil
-      :config
-      (evil-collection-init))
-#+end_src
-
-* Magit
-
-The best git gui ever made
-
-#+begin_src emacs-lisp
-  (use-package magit  
-    :straight t
-    :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-#+end_src
-
-* Projectile
+** Project Management
 
 Manage projects using projectile
 
 #+begin_src emacs-lisp
-  (use-package projectile  
-    :straight t
-    :diminish projectile-mode
-    :config (projectile-mode)
-    :custom ((projectile-completion-system 'ivy))
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :init
-    ;; NOTE: Set this to the folder where you keep your Git repos!
-    (when (file-directory-p "~/code")
-      (setq projectile-project-search-path '("~/code")))
-    (setq projectile-switch-project-action #'projectile-dired))
+  ;; (use-package projectile  
+  ;;   :straight t
+  ;;   :diminish projectile-mode
+  ;;   :config (projectile-mode)
+  ;;   :custom ((projectile-completion-system 'ivy))
+  ;;   :bind-keymap
+  ;;   ("C-c p" . projectile-command-map)
+  ;;   :init
+  ;;   ;; NOTE: Set this to the folder where you keep your Git repos!
+  ;;   (when (file-directory-p "~/code")
+  ;;     (setq projectile-project-search-path '("~/code")))
+  ;;   (setq projectile-switch-project-action #'projectile-dired))
 
-  (use-package counsel-projectile  
-    :straight t
-    :after projectile
-    :config (counsel-projectile-mode))
+  ;; (use-package counsel-projectile  
+  ;;   :straight t
+  ;;   :after projectile
+  ;;   :config (counsel-projectile-mode))
 #+end_src
 
-* Undo-Tree
+** Completion System
+
+In Emacs, a "completion system" refers to a mechanism that assists users by providing possible completions for a given partial input. This is especially useful in various contexts like typing commands, specifying file names, setting variable values, or even writing code. The completion system anticipates what the user intends to type next and offers suggestions to complete the input, making the interaction more efficient.
+
+The completion system that is to be used is at the centre of any Emacs configuration as it lends itself to prescribing all the ways that user experience is defined. 
+
+*** Interfaces
+
+In Emacs, a completion system's interface determines how candidates are presented to the user and how the user interacts with those candidates. Over the years, various interfaces have been developed, each with its own unique characteristics and interaction models. Many examples exist in different contexts:
+
+- Minibuffer
+- Vertical Lists
+- Grid-based
+- Buffer-based
+- Popups
+- Child Frames
+
+**** Vertico
+
+https://github.com/minad/vertico
+
+Vertico is a minimalistic completion system for Emacs that provides a vertical interface for completion candidates. It stands out due to its simplicity and focus on doing one thing well: offering a streamlined vertical completion UI for the minibuffer. The focus of Vertico is to provide a UI which behaves correctly under all circumstances. By reusing the built-in facilities system, Vertico achieves full compatibility with built-in Emacs completion commands and completion tables. Vertico only provides the completion UI but aims to be highly flexible, extendable and modular.
 
 #+begin_src emacs-lisp
-  (use-package undo-tree
-    :straight t
-    :diminish                       ;; Don't show an icon in the modeline
-    :bind ("C-x u" . undo-tree-visualize)
-    :hook (org-mode . undo-tree-mode) ;; For some reason, I need this. FIXME.
-    :config
-      ;; Always have it on
-      (global-undo-tree-mode)
+  (require 'vertico)
+  (vertico-mode)
 
-      ;; Each node in the undo tree should have a timestamp.
-      (setq undo-tree-visualizer-timestamps t)
+  ;; Different scroll margin
+  (setq vertico-scroll-margin 0)
 
-      ;; Show a diff window displaying changes between undo nodes.
-      (setq undo-tree-visualizer-diff t))
+  ;; Show more candidates
+  (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  (setq vertico-resize t)
+
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  (setq vertico-cycle t)
 #+end_src
 
-** TODO Move undo history to local cache of some kind
+**** Corfu
 
-Currently creates an annoying local file
+https://github.com/minad/corfu
 
-* Which-key
-
-~which-key~ is a minor mode for emacs that displays key bindings 
+Corfu (Completion Overlay Region FUnction) is an Emacs package that provides in-buffer completion using overlays, presenting completion candidates directly in the buffer akin to a popup. It's designed to offer a lightweight and straightforward completion experience. Corfu is a small package, which relies on the Emacs completion facilities and concentrates on providing a polished completion UI. In-buffer completion UIs in Emacs can hook into ~completion-in-region~, which implements the interaction with the user.
 
 #+begin_src emacs-lisp
-  (use-package which-key  
-    :straight t
-    :diminish which-key-mode
-    :init (which-key-mode)
-    :config
-    (setq which-key-idle-delay 0))
+  (require 'corfu)
+
+  (global-corfu-mode)
+  (setq corfu-auto t
+        corfu-quit-no-match 'separator)
+
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'complete)
 #+end_src
 
-* Functions
+*** Matching and Filtering
 
-Under this file are a collection of custom functions which are always prefixed with ~pm/*~ to distinguish
-from other configuration
+In the context of Emacs, "Matching and Filtering" refers to the process of narrowing down a list of candidates based on user input, so that only those items that align with the input criteria remain visible or are presented to the user. This is especially useful in completion systems, where users might be presented with a large number of potential completions and need an efficient way to find the one they're looking for.
 
+**** Orderless
+
+https://github.com/oantolin/orderless
+
+Orderless is an Emacs package that provides a flexible completion style for narrowing down candidates. Instead of requiring users to type the exact prefix or sequence of a candidate, Orderless allows for matching terms in any order, giving users a more relaxed and efficient completion experience.
+
+#+begin_src emacs-lisp
+(require 'orderless)
+(setq completion-styles '(orderless basic)
+      completion-category-overrides '((file (styles basic partial-completion))))
+#+end_src
+
+*** Search & Navigation
+
+One of the most important features in Emacs is being able to search and navigate such that users can quickly locate, move to, and manipulate text within and across files. There are a variety of features that users may intend to utilise:
+
+- Incremental Search
+- Regular Expression Search
+- Multi-file Search
+- Symbol and Semantic Search
+- Buffer and Window Management
+- Bookmarks
+- History/Recent files
+- Project Navigation
+- Semantic Navigation
+
+Typically in Emacs, there are a variety of internal and external methods to extend this functionality, typically as part of a generalised completion system and extend minibuffer actions and commands.
+
+**** Consult
+
+https://github.com/minad/consult
+
+Consult (short for "CONtextualized Subcommands LightweighT") is an Emacs package that provides a collection of commands which use the minibuffer for display and completion. Consult enhances the Emacs minibuffer experience by providing a set of commands that offer richer displays, asynchronous operations, and seamless integration with modern completion systems. It's particularly useful for users looking to supercharge their minibuffer-based workflows in Emacs.
+
+#+begin_src emacs-lisp
+  (require 'consult)
+#+end_src
+
+Keybindings for consult
+
+#+begin_src emacs-lisp
+  (general-define-key
+   ;; C-c bindings in `mode-specific-map'
+   "C-c M-x" 'consult-mode-command
+   "C-c h" 'consult-history
+   "C-c k" 'consult-kmacro
+   "C-c m" 'consult-man
+   "C-c i" 'consult-info
+   [remap Info-search] 'consult-info
+   ;; C-x bindings in `ctl-x-map'
+   "C-x M-:" 'consult-complex-command
+   "C-x b" 'consult-buffer
+   "C-x 4 b" 'consult-buffer-other-window
+   "C-x 5 b" 'consult-buffer-other-frame
+   "C-x r b" 'consult-bookmark
+   "C-x p b" 'consult-project-buffer
+   ;; Custom M-# bindings for fast register access
+   "M-#" 'consult-register-load
+   "M-'" 'consult-register-store
+   "C-M-#" 'consult-register
+   ;; Other custom bindings
+   "M-y" 'consult-yank-pop
+   ;; M-g bindings in `goto-map'
+   "M-g e" 'consult-compile-error
+   "M-g f" 'consult-flymake
+   "M-g g" 'consult-goto-line
+   "M-g M-g" 'consult-goto-line
+   "M-g o" 'consult-outline
+   "M-g m" 'consult-mark
+   "M-g k" 'consult-global-mark
+   "M-g i" 'consult-imenu
+   "M-g I" 'consult-imenu-multi
+   ;; M-s bindings in `search-map'
+   "M-s d" 'consult-find
+   "M-s D" 'consult-locate
+   "M-s g" 'consult-grep
+   "M-s G" 'consult-git-grep
+   "M-s r" 'consult-ripgrep
+   "M-s l" 'consult-line
+   "M-s L" 'consult-line-multi
+   "M-s k" 'consult-keep-lines
+   "M-s u" 'consult-focus-lines
+   ;; Isearch integration
+   "M-s e" 'consult-isearch-history)
+
+  (general-define-key
+   :keymaps 'isearch-mode-map
+   "M-e" 'consult-isearch-history
+   "M-s e" 'consult-isearch-history
+   "M-s l" 'consult-line
+   "M-s L" 'consult-line-multi)
+
+  (general-define-key
+   :keymaps 'minibuffer-local-map
+   "M-s" 'consult-history
+   "M-r" 'consult-history)
+#+end_src
+
+#+begin_src emacs-lisp
+  ;;   ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;;   ;; relevant when you use the default completion UI.
+  ;;   :hook (completion-list-mode . consult-preview-at-point-mode)
+
+  ;;   ;; The :init configuration is always executed (Not lazy)
+  ;;   :init
+
+  ;;   ;; Optionally configure the register formatting. This improves the register
+  ;;   ;; preview for `consult-register', `consult-register-load',
+  ;;   ;; `consult-register-store' and the Emacs built-ins.
+  ;;   (setq register-preview-delay 0.5
+  ;;         register-preview-function #'consult-register-format)
+
+  ;;   ;; Optionally tweak the register preview window.
+  ;;   ;; This adds thin lines, sorting and hides the mode line of the window.
+  ;;   (advice-add #'register-preview :override #'consult-register-window)
+
+  ;;   ;; Use Consult to select xref locations with preview
+  ;;   (setq xref-show-xrefs-function #'consult-xref
+  ;;         xref-show-definitions-function #'consult-xref)
+
+  ;;   ;; Configure other variables and modes in the :config section,
+  ;;   ;; after lazily loading the package.
+  ;;   :config
+
+  ;;   ;; Optionally configure preview. The default value
+  ;;   ;; is 'any, such that any key triggers the preview.
+  ;;   ;; (setq consult-preview-key 'any)
+  ;;   ;; (setq consult-preview-key "M-.")
+  ;;   ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;;   ;; For some commands and buffer sources it is useful to configure the
+  ;;   ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  ;;   (consult-customize
+  ;;    consult-theme :preview-key '(:debounce 0.2 any)
+  ;;    consult-ripgrep consult-git-grep consult-grep
+  ;;    consult-bookmark consult-recent-file consult-xref
+  ;;    consult--source-bookmark consult--source-file-register
+  ;;    consult--source-recent-file consult--source-project-recent-file
+  ;;    ;; :preview-key "M-."
+  ;;    :preview-key '(:debounce 0.4 any))
+
+  ;;   ;; Optionally configure the narrowing key.
+  ;;   ;; Both < and C-+ work reasonably well.
+  ;;   (setq consult-narrow-key "<") ;; "C-+"
+
+  ;;   ;; Optionally make narrowing help available in the minibuffer.
+  ;;   ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;;   ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+  ;;   ;; By default `consult-project-function' uses `project-root' from project.el.
+  ;;   ;; Optionally configure a different project root function.
+  ;;   ;;;; 1. project.el (the default)
+  ;;   ;; (setq consult-project-function #'consult--default-project--function)
+  ;;   ;;;; 2. vc.el (vc-root-dir)
+  ;;   ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+  ;;   ;;;; 3. locate-dominating-file
+  ;;   ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+  ;;   ;;;; 4. projectile.el (projectile-project-root)
+  ;;   ;; (autoload 'projectile-project-root "projectile")
+  ;;   ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;;   ;;;; 5. No project support
+  ;;   ;; (setq consult-project-function nil)
+  ;; )
+#+end_src
+
+*** Annotations
+
+Annotations refer to additional pieces of information displayed alongside completion candidates in the minibuffer. These annotations provide context, clarify the nature of the candidates, and help users make more informed selections.
+
+**** Marginalia
+
+https://github.com/minad/marginalia
+
+Marginalia is an Emacs package designed to enhance the completion experience by providing rich annotations to candidates displayed in the minibuffer. When you're selecting from a list of items, Marginalia adds supplementary context and details to each item, helping you make more informed decisions.
+
+#+begin_src emacs-lisp
+  (require 'marginalia)
+  (marginalia-mode)
+#+end_src
+*** Actions
+
+Actions refer to operations or commands that can be executed on a selected completion candidate. While the primary purpose of a completion system is to help users select from a list of candidates, often there's a need to perform different operations on these candidates beyond just selecting or inserting them. This is where actions come into play.
+
+**** Embark
+
+https://github.com/oantolin/embark
+
+Embark is an Emacs package that enhances the interactive experience by providing context-specific actions (or "embarkations") on targets, which can be anything from minibuffer completion candidates to text selected in a buffer. Essentially, it allows users to take various actions on different types of data in a context-aware manner. It's not specifically tied to a completion system but is also used heavily there in combination with some of the already listed configuration.
+
+#+begin_src emacs-lisp
+  (require 'embark)
+  (require 'embark-consult)
+
+  (general-define-key
+   "C-." 'embark-act
+   "C-;" 'embark-dwim
+   "C-h B" 'embark-bindings)
+
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none))))
+
+  (add-hook 'embark-collect-mode-hook 'consult-preview-at-point-mode)
+#+end_src
+
+** Programming Languages
+*** General Configuration
+**** Syntax Highlighting
+***** Numbers
+
+When programming highlight numbers
+
+#+begin_src emacs-lisp
+  (require 'highlight-numbers)
+  (add-hook 'prog-mode-hook 'highlight-numbers-mode)
+#+end_src
+
+***** Bracket Delimiters
+
+Add rainbow matching to all delimiters
+
+#+begin_src emacs-lisp
+  (require 'rainbow-delimiters)
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+#+end_src
+
+**** Line Numbers
+
+List line-numbers by default and make it relative to cursor position
+
+#+begin_src emacs-lisp
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+  (setq display-line-numbers 'relative)
+  ;; (dolist (mode '(org-mode-hook 
+  ;;   	      term-mode-hook))
+  ;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+**** Bracket Delimiters
+
+Especially useful for lisping
+
+#+begin_src emacs-lisp
+(require 'smartparens)
+(add-hook 'prog-mode-hook 'smartparens-mode)
+#+end_src
+
+** Utilities/Tools
+
+*** Profiling
+
+~esup~, https://github.com/jschaf/esup is a tool used for profiling emacs startup time.
+
+#+begin_src emacs-lisp
+(require 'esup)
+#+end_src
+
+** Custom Functions
+*** Reload Configuration
 #+begin_src emacs-lisp
   (defun pm/reload-config ()
     "Reloads the emacs configuration"
     (interactive)
     (load-file (concat user-emacs-directory "init.el")))
 #+end_src
-
-Note that in emacs, to add a function which is callable by ~M-x~, the ~(interactive)~ form must be added
-
-* Navigation
-
-This is a broad term category of the various packages which aid and improve system navigation
-
-** Actions
-
-Embark is used for a lot of things
-
-- https://systemcrafters.net/live-streams/october-15-2021/
-- https://karthinks.com/software/fifteen-ways-to-use-embark/
+*** Startup Time
 
 #+begin_src emacs-lisp
-  (use-package embark
-    :straight t
-    :ensure t
-    :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
-     ("C-;" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
-    :init
-    ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
-    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-    ;; strategy, if you want to see the documentation from multiple providers.
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-    :config
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none)))))
-
-  ;; Consult users will also want the embark-consult package.
-  (use-package embark-consult
-    :straight t
-    :ensure t ; only need to install it, embark loads it after consult if found
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode))
+(defun display-startup-time ()
+  (message "Emacs ready in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                    (time-subtract after-init-time before-init-time)))
+           gcs-done))
+(add-hook 'emacs-startup-hook 'display-startup-time)
 #+end_src
+** Finalizations
 
-** Completion
+Here is configuration which should end up at the end of the tangled file
 
-Vertico is a completion UI which is tightly coupled with the default emacs completion system
+*** Emacs Configuration Footer
+
+All elisp files should end with this
 
 #+begin_src emacs-lisp
-  (use-package vertico
-    :straight t
-    :init
-    (vertico-mode)
-
-    ;; Different scroll margin
-    (setq vertico-scroll-margin 0)
-
-    ;; Show more candidates
-    (setq vertico-count 20)
-
-    ;; Grow and shrink the Vertico minibuffer
-    (setq vertico-resize t)
-
-    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-    (setq vertico-cycle t))
+(provide 'init.el)
+;;; init.el ends here
 #+end_src
-
-** History
-
-#+begin_src emacs-lisp
-  (use-package savehist
-    :straight t
-    :init
-    (savehist-mode))
-#+end_src
-
-** Annotations
-
-#+begin_src emacs-lisp
-  (use-package marginalia
-    :straight t
-    ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
-    ;; available in the *Completions* buffer, add it to the
-    ;; `completion-list-mode-map'.
-    :bind (:map minibuffer-local-map
-           ("M-A" . marginalia-cycle))
-
-    ;; The :init section is always executed.
-    :init
-
-    ;; Marginalia must be activated in the :init section of use-package such that
-    ;; the mode gets enabled right away. Note that this forces loading the
-    ;; package.
-    (marginalia-mode))
-#+end_src
-
-** Search
-
-#+begin_src emacs-lisp
-  (use-package consult
-    :straight t
-    ;; Replace bindings. Lazily loaded due by `use-package'.
-    :bind (;; C-c bindings in `mode-specific-map'
-           ("C-c M-x" . consult-mode-command)
-           ("C-c h" . consult-history)
-           ("C-c k" . consult-kmacro)
-           ("C-c m" . consult-man)
-           ("C-c i" . consult-info)
-           ([remap Info-search] . consult-info)
-           ;; C-x bindings in `ctl-x-map'
-           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-           ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-           ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-           ;; Custom M-# bindings for fast register access
-           ("M-#" . consult-register-load)
-           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-           ("C-M-#" . consult-register)
-           ;; Other custom bindings
-           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-           ;; M-g bindings in `goto-map'
-           ("M-g e" . consult-compile-error)
-           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-           ("M-g g" . consult-goto-line)             ;; orig. goto-line
-           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-           ("M-g m" . consult-mark)
-           ("M-g k" . consult-global-mark)
-           ("M-g i" . consult-imenu)
-           ("M-g I" . consult-imenu-multi)
-           ;; M-s bindings in `search-map'
-           ("M-s d" . consult-find)                  ;; Alternative: consult-fd
-           ("M-s D" . consult-locate)
-           ("M-s g" . consult-grep)
-           ("M-s G" . consult-git-grep)
-           ("M-s r" . consult-ripgrep)
-           ("M-s l" . consult-line)
-           ("M-s L" . consult-line-multi)
-           ("M-s k" . consult-keep-lines)
-           ("M-s u" . consult-focus-lines)
-           ;; Isearch integration
-           ("M-s e" . consult-isearch-history)
-           :map isearch-mode-map
-           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-           ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-           ;; Minibuffer history
-           :map minibuffer-local-map
-           ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-           ("M-r" . consult-history))                ;; orig. previous-matching-history-element
-
-    ;; Enable automatic preview at point in the *Completions* buffer. This is
-    ;; relevant when you use the default completion UI.
-    :hook (completion-list-mode . consult-preview-at-point-mode)
-
-    ;; The :init configuration is always executed (Not lazy)
-    :init
-
-    ;; Optionally configure the register formatting. This improves the register
-    ;; preview for `consult-register', `consult-register-load',
-    ;; `consult-register-store' and the Emacs built-ins.
-    (setq register-preview-delay 0.5
-          register-preview-function #'consult-register-format)
-
-    ;; Optionally tweak the register preview window.
-    ;; This adds thin lines, sorting and hides the mode line of the window.
-    (advice-add #'register-preview :override #'consult-register-window)
-
-    ;; Use Consult to select xref locations with preview
-    (setq xref-show-xrefs-function #'consult-xref
-          xref-show-definitions-function #'consult-xref)
-
-    ;; Configure other variables and modes in the :config section,
-    ;; after lazily loading the package.
-    :config
-
-    ;; Optionally configure preview. The default value
-    ;; is 'any, such that any key triggers the preview.
-    ;; (setq consult-preview-key 'any)
-    ;; (setq consult-preview-key "M-.")
-    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-    ;; For some commands and buffer sources it is useful to configure the
-    ;; :preview-key on a per-command basis using the `consult-customize' macro.
-    (consult-customize
-     consult-theme :preview-key '(:debounce 0.2 any)
-     consult-ripgrep consult-git-grep consult-grep
-     consult-bookmark consult-recent-file consult-xref
-     consult--source-bookmark consult--source-file-register
-     consult--source-recent-file consult--source-project-recent-file
-     ;; :preview-key "M-."
-     :preview-key '(:debounce 0.4 any))
-
-    ;; Optionally configure the narrowing key.
-    ;; Both < and C-+ work reasonably well.
-    (setq consult-narrow-key "<") ;; "C-+"
-
-    ;; Optionally make narrowing help available in the minibuffer.
-    ;; You may want to use `embark-prefix-help-command' or which-key instead.
-    ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-    ;; By default `consult-project-function' uses `project-root' from project.el.
-    ;; Optionally configure a different project root function.
-    ;;;; 1. project.el (the default)
-    ;; (setq consult-project-function #'consult--default-project--function)
-    ;;;; 2. vc.el (vc-root-dir)
-    ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-    ;;;; 3. locate-dominating-file
-    ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-    ;;;; 4. projectile.el (projectile-project-root)
-    ;; (autoload 'projectile-project-root "projectile")
-    ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-    ;;;; 5. No project support
-    ;; (setq consult-project-function nil)
-  )
-#+end_src
-
-* Other
-
-#+BEGIN_SRC emacs-lisp
-  ;; #############################################################################
-  ;; hydra
-  ;; #############################################################################
-  (use-package hydra
-    :straight t)
-
-  ;; (defhydra hydra-text-scale (:timeout 4)
-  ;;  "scale text"
-  ;;  ("+" text-scale-increase "+")
-  ;;  ("-" text-scale-decrease "-")
-  ;;  ("f" nil "finished" :exit t))
-
-  ;; (pm/leader-key-def
-  ;;  "ts" '(hydra-text-scale/body :which-key "scale text"))
-
-
-  ;; #############################################################################
-  ;; ivy
-  ;; #############################################################################
-  ;; (use-package ivy  
-  ;;   :straight t
-  ;;   :after counsel
-  ;;   :diminish
-  ;;   :config
-  ;;   (ivy-mode 1)
-
-  ;;   (use-package ivy-rich    
-  ;;     :straight t
-  ;;     :init (ivy-rich-mode 1)))
-
-  ;; #############################################################################
-  ;; counsel
-  ;; #############################################################################
-  ;; (use-package counsel
-  ;;   :straight t
-  ;;   :bind (("M-x" . counsel-M-x)
-  ;; 	 ("C-x b" . counsel-ibuffer)
-  ;; 	 :map minibuffer-local-map
-  ;; 	 ("C-r" . 'counsel-minibuffer-history))
-  ;;   :config
-  ;;   (setq ivy-initial-inputs-alist nil)) 
-
-
-  ;; #############################################################################
-  ;; command-log-mode
-  ;; #############################################################################
-  (use-package command-log-mode  
-    :straight t
-    :diminish
-    :config (global-command-log-mode)
-    :bind (("C-c t" . clm/toggle-command-log-buffer)))
-
-  ;; #############################################################################
-  ;; which-key
-  ;; #############################################################################
-
-  ;; #############################################################################
-  ;; rainbow-delimiters
-  ;; #############################################################################
-
-  ;; #############################################################################
-  ;; helpful
-  ;; #############################################################################
-
-
-  ;; #############################################################################
-  ;; projectile
-  ;; #############################################################################
-
-  ;; #############################################################################
-  ;; magit
-  ;; #############################################################################
-
-  ;; #############################################################################
-  ;; org
-  ;; #############################################################################
-#+END_SRC
-
