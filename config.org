@@ -593,9 +593,9 @@ The best git gui ever made
 
 #+begin_src emacs-lisp
 (require 'org)
-
-(setq org-catch-invisible-edits t)
 #+end_src 
+
+** Appearence and Behaviour
 
 *** Ellipsis
 
@@ -633,6 +633,11 @@ Markers relate to the markup syntax used to provide different kinds of text styl
 
 **** TODO Add a font which works well with the different kinds of syntax highlighting
 *** Code Blocks
+
+In Org mode within Emacs, code blocks (often referred to as "source blocks") allow for the inclusion of source code from various programming languages. These blocks can be used for documentation, literate programming, or for dynamically generating content within an Org document.
+
+One of the powerful features of source blocks in Org mode is that they can be executed. By placing the cursor within a source block and pressing C-c C-c, you can run the code if Emacs is configured to support that particular language. The results can be inserted directly into the Org document.
+
 **** Template Tab Completion
 
 Since org-mode 9.2, the completion ~<s TAB~ does not work out of the box and so org-tempo is required
@@ -644,6 +649,7 @@ Also adds the completion for elisp source code blocks using ~<el TAB~
 (add-to-list 'org-structure-template-alist
              '("el" . "src emacs-lisp"))
 #+end_src
+
 **** Indentation
 
 Ensures that source code blocks are aligned with the left-most column.
@@ -657,6 +663,48 @@ Make Tab respect indentation of the major mode for the lang
 #+begin_src emacs-lisp
 (setq org-src-tab-acts-natively t)
 #+end_src
+
+**** Evaluation
+
+Don't ask permission to evaluate. Evaluation can be done using the Keybinding ~C-c C-c.~
+
+#+begin_src emacs-lisp
+(setq org-confirm-babel-evaluate nil)
+#+end_src
+*** Miscellaneous
+
+Prevents edits to content hidden under a folded heading
+
+#+begin_src emacs-lisp
+(setq org-catch-invisible-edits t)
+#+end_src
+
+** Task Management
+
+Org mode in Emacs for task management is a powerful way to organize, prioritize, and track tasks and projects. The flexibility of Org mode allows users to create a system tailored to their unique needs.
+
+*** "TODO" States
+
+By default, org mode provides two states, ~TODO~ and ~DONE~ which are used to describe and manage a task. The below keyword states provide a base outline on how tasks are defined and managed across the duration of their lifetime.
+
+There are a lot of 
+
+#+begin_src emacs-lisp
+(setq org-todo-keywords
+      '((sequence
+         "TODO(t)" ;; Standard task
+         "PROG(s)" ;; For when a task is in progress
+         "NEXT(n)" ;; For a task to do next
+         "IDEA(i)" ;; For when a task could be done in the future
+         "|" ;; 
+         "DONE(d)" ;; When a task is completed
+         "KILL(c)" ;; When a task is rejected
+         )))
+#+end_src
+
+It is to be noted that TODO states can be defined per-file, which may come in handy for prescribing behaviour for certain notes/documents.
+
+*** TODO 
 
 * Project Management
 
