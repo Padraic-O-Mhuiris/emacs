@@ -704,7 +704,7 @@ There are a lot of
 
 It is to be noted that TODO states can be defined per-file, which may come in handy for prescribing behaviour for certain notes/documents.
 
-*** TODO 
+**** TODO Add property metadata for when state transitions occur
 
 * Project Management
 
