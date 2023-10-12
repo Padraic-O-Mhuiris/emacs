@@ -7,7 +7,7 @@ This is my literate emacs confguration which I intend  to use for all of my comp
 *** TODO Enable ~C-Enter~ in a list to create a new item in that list
 Currently will only put a new org heading relative to the nearest one
 https://github.com/alphapapa/unpackaged.el#org-return-dwim
-*** TODO Text wrapping in org-mode doc uments
+*** TODO Text wrapping in org-mode documents
 *** TODO Elisp linting and formatting
 *** TODO org-mode code blocks indenting
 *** TODO Add olivetti mode
@@ -20,30 +20,11 @@ The idea is that all .git projects found under ~~/code~ or some other listed dir
 
 ** Package Management
 
-This is where this configuration differs from most others. Emacs has a
-wide variety of package management solutions, internally like
-~package.el~ or externally like ~use-package~ or ~straight.el~. However, the
-problem persists is that any emacs configuration has implied external
-dependencies, say nodejs for writing javascript projects.  Where I
-differ is that I use Nix to manage both of the elisp package
-dependencies and the external dependencies. This is the general rule
-but a large exception is where software projects using Nix also
-maintain their own dependencies using shell hooks. This would also be
-a good idea to incorporate where a project buffer rationalises
-whethers the project is /"nixified"/ and if not will attempt to download
-those dependencies, or at least make the user aware that it is not
-available.  Not to digress, because the elisp packages are
-pre-installed, all that has to be done is to ~require~ them in a file
-and so removes a lot of unneccessary juggling of ~use-package~.
+This is where this configuration differs from most others. Emacs has a wide variety of package management solutions, internally like ~package.el~ or externally like ~use-package~ or ~straight.el~. However, the problem persists is that any emacs configuration has implied external dependencies, say nodejs for writing javascript projects.  Where I differ is that I use Nix to manage both of the elisp package dependencies and the external dependencies. This is the general rule but a large exception is where software projects using Nix also maintain their own dependencies using shell hooks. This would also be a good idea to incorporate where a project buffer rationalises whethers the project is /"nixified"/ and if not will attempt to download those dependencies, or at least make the user aware that it is not available.  Not to digress, because the elisp packages are pre-installed, all that has to be done is to ~require~ them in a file and so removes a lot of unneccessary juggling of ~use-package~.
 
-As this is a nixified emacs literate config, I use a flake to define
-an emacs package which contains all required dependencies. This may
-also be moved to inside my notes as externally referencing pieces of
-my configuration could be useful for blogging/research.
+As this is a nixified emacs literate config, I use a flake to define an emacs package which contains all required dependencies. This may also be moved to inside my notes as externally referencing pieces of my configuration could be useful for blogging/research.
 
-One pain point which may manifest is that the emacs-overlay which the
-flake uses becomes unmaintained or does not declare a package I
-want. A workaround could be to use ~straight.el~.
+One pain point which may manifest is that the emacs-overlay which the flake uses becomes unmaintained or does not declare a package I want. A workaround could be to use ~straight.el~.
 
 ** Useful Links
 
@@ -61,6 +42,8 @@ want. A workaround could be to use ~straight.el~.
 - https://github.com/frap/emacs-literate
 - Uses nix! https://panadestein.github.io/emacsd/
 - https://github.com/caisah/emacs.dz
+- https://github.com/alopezrivera/Seaman-Emacs/blob/main/seaman/seaman.org#base-configuration 
+
 * Prerequisites
 
 Firstly, the configuration listed here should be executed first
@@ -272,20 +255,6 @@ Should a file be modified outside of Emacs, always respect those changes. Also c
 (set-keyboard-coding-system 'utf-8)
 #+end_src
 
-*** Long Line Handling
-
-Emacs has historically had issues with files with extremely long lines
-
-#+begin_src emacs-lisp
-(require 'so-long)
-#+end_src
-
-Add the global mode once initialisation has finished
-
-#+begin_src emacs-lisp
-(add-hook 'after-init-hook 'global-so-long-mode)
-#+end_src
-
 *** Don't Make Backups
 
 #+begin_src emacs-lisp
@@ -332,7 +301,7 @@ Disable it to be sure
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 #+end_src
-** Y/N
+** Y/N Prompt
 
 Ensure all yes/no type queries can be answered with y/n
 
@@ -363,9 +332,64 @@ Emacs enables debugging using the ~--debug-init~ flag. The configuration below i
 #+begin_src emacs-lisp
 (require 'no-littering)
 #+end_src
+* Keybindings
+
+It is better to define the keybinding system early as subsequent
+functionality is dependent
+
+** ~general.el~
+
+~general~ is a keybinding framework for emacs and is complementary to evil mode users. ~SPC~ will be a global key to manage a lot of behaviour
+
+#+begin_src emacs-lisp
+  (require 'general)
+  (general-evil-setup t)
+
+  (general-create-definer pm/leader
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+#+end_src
+
+** ~which-key~
+
+~which-key~ enhances the Emacs experience by providing real-time, interactive feedback on keybindings, making it easier to navigate and use the vast array of commands and functionalities available in the editor.
+
+#+begin_src emacs-lisp
+  (require 'which-key)
+  (which-key-mode)
+  (setq which-key-idle-delay 0)
+#+end_src
+** Global Keybindings
+
+Here is a space for defining all global keybindings
+
+*** Bucket
+
+For keybindings which haven't found their place in the config.
+
+#+begin_src emacs-lisp
+  (pm/leader
+    "r" '(pm/reload-config :which-key "Reload config")
+    "u" '(:ignore t :which-key "ui")
+    "ut" '(counsel-load-theme :which-key "Select Theme")
+    "m" '(:ignore t :which-key "magit")
+    "mm" '(magit-status-quick :which-key "status"))
+#+end_src
+
+*** Esc Acts as Quit
+
+By default, ~C-g~ will quit a process which is slightly more work than ~<escape>~
+
+#+begin_src emacs-lisp
+  (general-define-key
+   "<escape>" 'keyboard-escape-quit)
+#+end_src
+
 * Display
 
 Configuration regarding the emacs appearence should go here
+
 ** Theme
 
 doom-themes is a popular collection of emacs themes. 
@@ -428,61 +452,58 @@ The "fringe" is the narrow vertical areas on either side of windows
   (require 'ace-window)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+end_src
-* Keybindings
-
-All keybind configuration goes here
-
-** ~general.el~
-
-~general~ is a keybinding framework for emacs and is complementary to evil mode users. ~SPC~ will be a global key to manage a lot of behaviour
-
-#+begin_src emacs-lisp
-  (require 'general)
-  (general-evil-setup t)
-
-  (general-create-definer pm/leader
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
-#+end_src
-
-** ~which-key~
-
-~which-key~ enhances the Emacs experience by providing real-time, interactive feedback on keybindings, making it easier to navigate and use the vast array of commands and functionalities available in the editor.
-
-#+begin_src emacs-lisp
-  (require 'which-key)
-  (which-key-mode)
-  (setq which-key-idle-delay 0)
-#+end_src
-** Global Keybindings
-
-Here is a space for defining all global keybindings
-
-*** Bucket
-
-For keybindings which haven't found their place in the config.
-
-#+begin_src emacs-lisp
-  (pm/leader
-    "r" '(pm/reload-config :which-key "Reload config")
-    "u" '(:ignore t :which-key "ui")
-    "ut" '(counsel-load-theme :which-key "Select Theme")
-    "m" '(:ignore t :which-key "magit")
-    "mm" '(magit-status-quick :which-key "status"))
-#+end_src
-
-*** Esc Acts as Quit
-
-By default, ~C-g~ will quit a process which is slightly more work than ~<escape>~
-
-#+begin_src emacs-lisp
-  (general-define-key
-   "<escape>" 'keyboard-escape-quit)
-#+end_src
-
 * Editing
 File editing is the most important thing an editor does right?!?!
+
+** Text Behaviour
+
+*** Long Lines
+
+Emacs has historically had issues with files with extremely long lines
+
+#+begin_src emacs-lisp
+(require 'so-long)
+#+end_src
+
+Add the global mode once initialisation has finished as it 
+
+#+begin_src emacs-lisp
+(add-hook 'after-init-hook 'global-so-long-mode)
+#+end_src
+
+*** Filling
+
+"Filling" refers to the process of breaking lines of text to fit within a specified width, which is typically the value of the ~fill-column~ variable. This action ensures that text is neatly wrapped and presented within the confines of a set width, making it more readable and visually organized, especially in text modes.
+
+#+begin_src emacs-lisp
+  (setq fill-column 80)
+#+end_src
+
+It is probably not desirable to fill unless the user specifies directly. Enabling visual line wrapping is preferable as it does not alter the file in order to make the editing experience more appealing. The desired effect can be achieved using ~visual-line-mode~ which wraps text which goes past a certain point but maintains the same line. "Filling" can be opted in using one of the many commands like ~evil-fill~
+
+*** Wrapping
+
+~visual-line-mode~ is a minor mode in Emacs that affects how lines of text are displayed in the buffer, without modifying the actual content of the file. When this mode is enabled, long lines of text are visually wrapped at the edge of the window, making them appear as multiple lines on the screen, even though they remain a single line in the file.
+
+We only want to turn this on for text and programming modes though
+
+#+begin_src emacs-lisp
+(add-hook 'text-mode-hook 'visual-line-mode)
+(add-hook 'prog-mode-hook 'visual-line-mode)
+#+end_src
+
+*** Tabs vs Spaces
+
+Don't trust tabs
+
+#+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil)
+(setq tab-width 2)
+#+end_src
+
+#+begin_src emacs-lisp
+(setq-default tab-always-indent 'complete)
+#+end_src
 ** ~evil~
 
 For those who like to use vim in emacs
@@ -529,28 +550,6 @@ A very nice visualisation tool for tracing file changes in a tree hierarchy
   (setq undo-tree-visualizer-diff t)
 #+end_src
 
-** Tabs vs Spaces
-
-Don't trust tabs
-
-#+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil)
-(setq tab-width 2)
-#+end_src
-
-#+begin_src emacs-lisp
-(setq-default tab-always-indent 'complete)
-#+end_src
-** Filling
-
-"Fillig" refers to the process of breaking lines of text to fit within a specified width, which is typically the value of the ~fill-column~ variable. This action ensures that text is neatly wrapped and presented within the confines of a set width, making it more readable and visually organized, especially in text modes.
-
-#+begin_src emacs-lisp
-  (setq fill-column 80)
-  (add-hook 'text-mode-hook 'auto-fill-mode)
-  (add-hook 'prog-mode-hook 'auto-fill-mode)
-#+end_src
-
 * Git
 ** ~magit~
 
@@ -563,25 +562,67 @@ The best git gui ever made
 
 * Org
 
-The best markup language ever made
+/Org/ is a versatile and powerful mode in Emacs designed for keeping notes, maintaining to-do lists, planning projects, and authoring documents. It's built around a plain-text formatting system, making it platform-independent and easily readable outside of Emacs. Over the years, /Org/ has evolved into a robust toolset that can handle everything from personal task management to publishing, coding, and even scientific research.
 
 #+begin_src emacs-lisp
   (require 'org)
-  (require 'org-bullets)
 
-  ;; Replace the content marker, “⋯”, with a nice unicode arrow.
-  (setq org-ellipsis " ⤵")
   ;; Avoid accidentally editing folded regions, say by adding text after an Org “⋯”.
   (setq org-catch-invisible-edits t)
-  ;; Tab should do indent in code blocks
   (setq org-src-tab-acts-natively t)
-  ;; Give quote and verse blocks a nice look.
-  (setq org-fontify-quote-and-verse-blocks t)
-  (setq org-hide-emphasis-markers t)
-  (setq org-startup-indented t)
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src 
 
+** Appearence
+
+All appearence related configuration goes here 
+
+*** Org-bullets
+
+/Org-bullets/ is an Emacs package designed to enhance the visual appearance of Org-mode documents by replacing the standard asterisks (*) used for headlines with more visually appealing bullet characters.
+
+#+begin_src emacs-lisp
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+*** Ellipsis
+
+Replaces the default content marker, "⋯", with a nice unicode arrow.
+
+#+begin_src emacs-lisp
+  (setq org-ellipsis " ⤵")
+#+end_src
+
+*** Indentation
+
+Content under org headings will be indented such that it is clear under which heading content is nested.
+
+#+begin_src emacs-lisp
+  (setq org-startup-indented t)
+  (add-hook 'org-mode-hook 'org-indent-mode)
+#+end_src
+
+*** Markers
+
+Markers relate to the markup syntax used to provide different kinds of text styling.
+
+#+begin_src emacs-lisp
+  (setq org-hide-emphasis-markers t)
+#+end_src
+
+**** TODO Add a font which works well with the different kinds of syntax highlighting
+
+*** Wrapping
+
+Ensure that lines automatically wrap around the screen
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook #'(lambda ()
+                             (visual-line-mode)
+                             ))
+#+end_src
+
+#+end_src
 ** Enable Tab Completion for Code Blocks
 
 Since org-mode 9.2, the completion ~<s TAB~ does not work out of the box and so org-tempo is required
@@ -594,19 +635,6 @@ Also adds the completion for elisp source code blocks using ~<el TAB~
                          '("el" . "src emacs-lisp"))
 #+end_src
 
-** Text Wrapping
-
-Ensure that lines automatically wrap around the screen
-
-#+begin_src emacs-lisp
-  (add-hook 'org-mode-hook #'(lambda ()
-
-                             ;; make the lines in the buffer wrap around the edges of the screen.
-
-                             ;; to press C-c q  or fill-paragraph ever again!
-                             (visual-line-mode)
-                             (org-indent-mode)))
-#+end_src
 * Project Management
 
 Manage projects using projectile
