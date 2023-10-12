@@ -433,13 +433,14 @@ Also borrowing from the doom collection
 
 #+begin_src emacs-lisp
 (require 'doom-modeline)
-(doom-modeline-mode 1)
+(doom-modeline-mode t)
 (setq doom-modeline-height 55)
 (setq doom-modeline-buffer-file-name-style 'relative-to-project)
 (setq doom-line-numbers-style 'relative)
 (setq doom-modeline-major-mode-icon t)
 (setq doom-modeline-buffer-state-icon t)
 (setq doom-modeline-major-mode-color-icon t)
+(setq doom-modeline-window-width-limit nil)
 #+end_src
 ** Windows
 *** Fringe
@@ -514,6 +515,8 @@ Here, I've increased the column width as the default ~fill-column~ is too narrow
               (setq visual-fill-column-width 140) 
               (visual-fill-column-mode)))
 #+end_src
+
+https://github.com/seagle0128/doom-modeline/issues/672
 
 *** Tabs vs Spaces
 
@@ -671,6 +674,7 @@ Don't ask permission to evaluate. Evaluation can be done using the Keybinding ~C
 #+begin_src emacs-lisp
 (setq org-confirm-babel-evaluate nil)
 #+end_src
+
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading
