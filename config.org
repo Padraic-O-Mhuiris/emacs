@@ -53,7 +53,7 @@ Firstly, the configuration listed here should be executed first
 Emacs has a [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][convention]] which must be complied with when publishing elisp code.
 
 #+begin_src emacs-lisp
-;;; init.el --- Padraic's Emacs configuration -*- lexical-binding: t -*-
+;;; config.el --- Padraic's Emacs configuration -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2023-2023 Patrick H Morris
 
@@ -68,6 +68,15 @@ Emacs has a [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-
 #+end_src
 
 Note that this also specifies the usage of lexical binding. See https://nullprogram.com/blog/2016/12/22/ for an explaination. This should always be placed at the top of the file.
+
+** Require locally defined functions
+
+The function section places functions in a different file, ~functions.el~ which should be loaded at the start.
+
+#+begin_src emacs-lisp
+  (load-file (concat user-emacs-directory "functions.el"))
+#+end_src
+
 
 ** Disable Magic File Names on Startup
 
@@ -152,7 +161,6 @@ This is a useful variable which can be used to mitigate issues surrounding reloa
 
 Modifications to the default emacs settings should exist here. No
 external package should be referenced.
-
 
 ** Personal Configuration
 
@@ -453,13 +461,14 @@ The "fringe" is the narrow vertical areas on either side of windows
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+end_src
 * Editing
+
 File editing is the most important thing an editor does right?!?!
 
 ** Text Behaviour
 
 *** Long Lines
 
-Emacs has historically had issues with files with extremely long lines
+Emacs has historically had severe performance issues with files that contain long lines.
 
 #+begin_src emacs-lisp
 (require 'so-long)
@@ -471,7 +480,9 @@ Add the global mode once initialisation has finished as it
 (add-hook 'after-init-hook 'global-so-long-mode)
 #+end_src
 
-*** Filling
+*** Filling/Wrapping
+
+Define a variable to be used to specify column width
 
 "Filling" refers to the process of breaking lines of text to fit within a specified width, which is typically the value of the ~fill-column~ variable. This action ensures that text is neatly wrapped and presented within the confines of a set width, making it more readable and visually organized, especially in text modes.
 
@@ -479,17 +490,29 @@ Add the global mode once initialisation has finished as it
   (setq fill-column 80)
 #+end_src
 
-It is probably not desirable to fill unless the user specifies directly. Enabling visual line wrapping is preferable as it does not alter the file in order to make the editing experience more appealing. The desired effect can be achieved using ~visual-line-mode~ which wraps text which goes past a certain point but maintains the same line. "Filling" can be opted in using one of the many commands like ~evil-fill~
+It is probably not desirable to fill unless the user specifies directly. Enabling visual line wrapping is preferable as it does not alter the file in order to make the editing experience more appealing. The desired effect can be achieved using ~visual-line-mode~ which wraps text which goes past a certain point but maintains the same line. "Filling" can be opted in using one of the many commands like ~evil-fill~ 
 
-*** Wrapping
+Wrapping is where text is shown on the same line but the pane width is respected such that the line "wraps" around the screen. ~visual-line-mode~ is a minor mode in Emacs that affects how lines of text are displayed in the buffer, without modifying the actual content of the file. When this mode is enabled, long lines of text are visually wrapped at the edge of the window, making them appear as multiple lines on the screen, even though they remain a single line in the file.
 
-~visual-line-mode~ is a minor mode in Emacs that affects how lines of text are displayed in the buffer, without modifying the actual content of the file. When this mode is enabled, long lines of text are visually wrapped at the edge of the window, making them appear as multiple lines on the screen, even though they remain a single line in the file.
-
-We only want to turn this on for text and programming modes though
+We only want to turn this on for text and programming modes as things like the minibuffer and terminals should not need to do this
 
 #+begin_src emacs-lisp
-(add-hook 'text-mode-hook 'visual-line-mode)
-(add-hook 'prog-mode-hook 'visual-line-mode)
+  (add-hook 'text-mode-hook 'visual-line-mode)
+  (add-hook 'prog-mode-hook 'visual-line-mode)
+#+end_src
+
+However, ~visual-line-mode~ will wrap only at the window edge which could mean arbitrarily long lines if the window is the full screen width. Alternatively, using ~visual-fill-column~ package allows for soft wrapping at a specific column which is referenced by ~pm/column-width~. This should make text wrapping occur at that column width or if the pane is smaller. This should make for a better reading experience.
+
+https://codeberg.org/joostkremers/visual-fill-column
+
+Here, I've increased the column width as the default ~fill-column~ is too narrow at 80. Most programming modes ought to provide their own prettification tooling which should override any text wrapping. "Filling" can be left manual and only used when align code commentary or things of that ilk.
+
+#+begin_src emacs-lisp
+    (require 'visual-fill-column)
+    (add-hook 'visual-line-mode-hook
+              #'(lambda ()
+                 (setq visual-fill-column-width 140) 
+                 (visual-fill-column-mode)))
 #+end_src
 
 *** Tabs vs Spaces
@@ -993,25 +1016,28 @@ Nix is a nice language
 (require 'esup)
 #+end_src
 
-* Custom Functions
+* Functions
+
+All functions here should be tangled into their own file, ~functions.el~ which can then be instantiated at the top of the generated ~config.el~. This will enforce that any function call can be referenced but keep the structure of this document intact.
+
 ** Reload Configuration
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp ./functions.el
   (defun pm/reload-config ()
     "Reloads the emacs configuration"
     (interactive)
     (load-file (concat user-emacs-directory "init.el")))
 #+end_src
-** Startup Time
+** Startup Time 
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle ./functions.el
 (defun display-startup-time ()
   (message "Emacs ready in %s with %d garbage collections."
            (format "%.2f seconds"
                    (float-time
                     (time-subtract after-init-time before-init-time)))
            gcs-done))
-(add-hook 'emacs-startup-hook 'display-startup-time)
 #+end_src
+
 * Finalizations
 
 Here is configuration which should end up at the end of the tangled file
@@ -1021,6 +1047,11 @@ Here is configuration which should end up at the end of the tangled file
 All elisp files should end with this
 
 #+begin_src emacs-lisp
-(provide 'init.el)
-;;; init.el ends here
+(provide 'config.el)
+;;; config.el ends here
+#+end_src
+
+#+begin_src emacs-lisp :tangle ./functions.el
+(provide 'functions.el)
+;;; functions.el ends here
 #+end_src

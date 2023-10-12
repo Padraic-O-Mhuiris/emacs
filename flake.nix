@@ -41,18 +41,19 @@
             package = pkgs.emacs-unstable.override { withGTK3 = true; };
             extraEmacsPackages = epkgs:
               with epkgs; [
-		            embark
-		            embark-consult
-		            esup
-		            highlight-numbers
-		            marginalia
-		            org-bullets
-		            smartparens
-		            undo-tree
-		            vertico
-	              ace-window
-	              corfu
-	              orderless
+                visual-fill-column
+                embark
+                embark-consult
+                esup
+                highlight-numbers
+                marginalia
+                org-bullets
+                smartparens
+                undo-tree
+                vertico
+                ace-window
+                corfu
+                orderless
                 all-the-icons
                 doom-modeline
                 doom-themes
