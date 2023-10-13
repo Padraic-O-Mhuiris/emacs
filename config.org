@@ -15,6 +15,12 @@ https://github.com/alphapapa/unpackaged.el#org-return-dwim
 *** IDEA Autoload all projects with .git
 The idea is that all .git projects found under ~~/code~ or some other listed directory paths should be automatically listed. When searching through projects, the most recent edited or committed to should be listed first in that order
 
+*** IDEA Set ~:EXPIRY:~ attribute when done to auto-archive finished todos
+:PROPERTIES:
+:ORDERED:  t
+:CREATED:  <2023-10-13 Fri 14:35>
+:END:
+
 * Introduction
 ** TODO Explain purpose of this document
 
@@ -635,6 +641,7 @@ Markers relate to the markup syntax used to provide different kinds of text styl
 #+end_src
 
 **** TODO Add a font which works well with the different kinds of syntax highlighting
+
 *** Code Blocks
 
 In Org mode within Emacs, code blocks (often referred to as "source blocks") allow for the inclusion of source code from various programming languages. These blocks can be used for documentation, literate programming, or for dynamically generating content within an Org document.
@@ -691,27 +698,85 @@ Org mode in Emacs for task management is a powerful way to organize, prioritize,
 
 By default, org mode provides two states, ~TODO~ and ~DONE~ which are used to describe and manage a task. The below keyword states provide a base outline on how tasks are defined and managed across the duration of their lifetime.
 
-There are a lot of 
+Extending this behaviour we can add more states which offer a generic way of tracking any arbitrary task.
 
 #+begin_src emacs-lisp
 (setq org-todo-keywords
       '((sequence
          "TODO(t)" ;; A task that needs doing and is ready to do
-         "PROG(p)" ;; A task that is in progress
-         "NEXT(n)" ;; A task which should be done next
-         "IDEA(i)" ;; A task which might occur
-         "WAIT(w)" ;; A task which is held up for an external reason
-         "HOLD(h)" ;; A task which is paused
-         "NOTE(n)" ;; A task which serves as a reminder
+         "PROG(p!)" ;; A task that is in progress
+         "NEXT(n!)" ;; A task which should be done next
+         "IDEA(i!)" ;; A task which might occur
+         "WAIT(w@/!)" ;; A task which is held up for an external reason
+         "HOLD(h@/!)" ;; A task which is paused
          "|" ;;
-         "DONE(d)" ;; When a task is completed
-         "KILL(c)" ;; When a task is rejected
-         )))
+         "DONE(d!)" ;; When a task is completed
+         "KILL(k@/!)" ;; When a task is rejected
+         )
+        (sequence "NOTE" "|")))
 #+end_src
 
 It is to be noted that TODO states can be defined per-file, which may come in handy for prescribing behaviour for certain notes/documents.
 
-**** TODO Add property metadata for when state transitions occur
+#+begin_src emacs-lisp
+(setq org-log-done 'note)
+(setq org-log-into-drawer t) 
+#+end_src
+
+*** Block ~DONE~ state for TODOs with dependent children TODOs
+
+Should a TODO heading contain nested TODOs, then all nested TODOs must be put in a finished state
+
+#+begin_src emacs-lisp
+(setq org-enforce-todo-dependencies t)
+#+end_src
+
+*** Create custom hook which for ~org-insert-todo-heading~
+
+As org-mode does not come with a hook for ~org-insert-todo-heading~ we want to add one for lines beginning
+
+#+begin_src emacs-lisp
+(defun pm/run-org-insert-todo-heading-hook (&rest _)
+  "Run `pm/org-insert-todo-heading-hook'."
+  (run-hooks 'pm/org-insert-todo-heading-hook))
+
+(advice-add 'org-insert-todo-heading :after 'pm/run-org-insert-todo-heading-hook)
+(advice-add 'org-insert-todo-heading-respect-content :after 'pm/run-org-insert-todo-heading-hook)
+(advice-add 'org-insert-todo-subheading :after 'pm/run-org-insert-todo-heading-hook)
+
+;; (add-hook 'org-after-todo-state-change-hook #'my/log-todo-creation-date)
+#+end_src
+
+*** ~CREATED~ metadata timestamp
+
+For any ~TODO~ heading, a ~SCHEDULED~ or ~DEADLINE~  and ~CLOSED~ timestamp metadata can be assigned. This is useful metadata but also including ~CREATED~ would be useful.
+
+We define the 4 timestamp kinds:
+
+And then add a specialised function always adds a ~CREATED~ timestamp property. 
+
+#+begin_src emacs-lisp
+(require 'org-expiry)
+
+(defun pm/org-add-created-timestamp ()
+  (save-excursion
+    (org-back-to-heading)
+    (org-expiry-insert-created)))
+
+(add-hook 'pm/org-insert-todo-heading-hook 'pm/org-add-created-timestamp) 
+#+end_src
+
+*** Add ~ORDERED~ property for any TODO heading
+
+The ~ORDERED~ property restricts sequential TODO's under a heading to be assigned as ~DONE~ until the previous ~TODO~ is. This enforces that tasks and subtasks are described in the order they are to be completed. 
+
+#+begin_src emacs-lisp
+(defun pm/org-todo-heading-add-ordered-property ()
+  (when (org-at-heading-p)
+    (org-set-property "ORDERED" "t")))
+
+(add-hook 'pm/org-insert-todo-heading-hook 'pm/org-todo-heading-add-ordered-property)
+#+end_src
 
 * Project Management
 

@@ -64,6 +64,7 @@
                 nix-mode
                 no-littering
                 org
+                org-contrib
                 rainbow-delimiters
                 which-key
               ];
