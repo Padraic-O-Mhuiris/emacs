@@ -1123,9 +1123,12 @@ List line-numbers by default and make it relative to cursor position
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq display-line-numbers 'relative)
-;; (dolist (mode '(org-mode-hook 
-;;   	      term-mode-hook))
-;;   (add-hook mode (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+Ensure a fixed width so that larger files don't interfere with the text in buffer alignment
+
+#+begin_src emacs-lisp
+(setq display-line-numbers-width-start t)
 #+end_src
 
 *** Bracket Delimiters
