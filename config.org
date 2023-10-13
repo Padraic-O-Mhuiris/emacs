@@ -276,6 +276,11 @@ Should a file be modified outside of Emacs, always respect those changes. Also c
 (setq make-backup-files nil)
 #+end_src
 
+*** End Sentence with Single Space
+
+#+begin_src emacs-lisp
+(setq sentence-end-double-space nil)
+#+end_src
 ** UI
 
 *** Remove Features
