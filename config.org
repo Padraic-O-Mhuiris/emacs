@@ -926,6 +926,10 @@ The general structure I wish to have is as follows:
   - Also could be notes related to people of relevance
     - i.e, Napolean Bonaparte
   - Maybe to have a ~~/notes/people/~ might be the best approach 
+- Blog notes
+  - These are actually publishable ~.org~ files for various blog ideas
+  - Should exist under ~~notes/blog/~
+  - Probably can contain referencing to other org material but there should be a reserved heading ("Content") which is the content to be published.
 - Other structures may emerge for various interests but in general, things should be left as non-hierarchial as possible unless abundantly obvious
 
 ** Agenda
