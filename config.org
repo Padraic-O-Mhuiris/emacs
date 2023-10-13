@@ -687,6 +687,14 @@ Don't ask permission to evaluate. Evaluation can be done using the Keybinding ~C
 (setq org-confirm-babel-evaluate nil)
 #+end_src
 
+*** Folding
+
+Fold headings at start
+
+#+begin_src emacs-lisp
+(setq org-startup-folded t)
+#+end_src
+
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading
