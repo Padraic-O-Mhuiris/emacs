@@ -1158,6 +1158,18 @@ Nix is a nice language
 (require 'esup)
 #+end_src
 
+** Help
+
+https://github.com/Wilfred/helpful
+
+#+begin_src emacs-lisp
+(require 'helpful)
+
+(general-define-key
+ "C-h f" 'helpful-function
+ "C-h v" 'helpful-variable
+ "C-h k" 'helpful-key)
+#+end_src
 * Functions
 
 All functions here should be tangled into their own file, ~functions.el~ which can then be instantiated at the top of the generated ~config.el~. This will enforce that any function call can be referenced but keep the structure of this document intact.

@@ -50,6 +50,7 @@
                 org-bullets
                 smartparens
                 undo-tree
+                helpful
                 vertico
                 ace-window
                 corfu
