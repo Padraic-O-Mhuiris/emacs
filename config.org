@@ -529,6 +529,11 @@ Here, I've increased the column width as the default ~fill-column~ is too narrow
 
 https://github.com/seagle0128/doom-modeline/issues/672
 
+Always ensure that the modeline is aligned as far right
+#+begin_src emacs-lisp
+(setq mode-line-right-align-edge 'right-fringe)
+#+end_src
+
 *** Tabs vs Spaces
 
 Don't trust tabs
