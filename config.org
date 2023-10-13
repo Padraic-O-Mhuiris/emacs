@@ -796,6 +796,139 @@ The ~ORDERED~ property restricts sequential TODO's under a heading to be assigne
 (add-hook 'pm/org-insert-todo-heading-hook 'pm/org-todo-heading-add-ordered-property)
 #+end_src
 
+** Notes
+
+The notes system I wish to create encompasses many areas but in general it is desired to become my /Personal Knowledge Management System/ - which in short is a process of collecting information that I can use to gather, classify, store, search, retrieve and share knowledge on my daily activities.
+
+One of the major requirements in this is that it should be reasonably easy to use. It should be accepted that cruft will build up and breaking changes may emerge where process of note-taking or management is removed or edited. Building a custom Emacs configuration intends to tailor this for me such that it is reasonably easy to build on.
+
+This will all be facilitated by Org Roam which is a tool for note-taking which reflects the nature of how thoughts and ideas are "networked". The Zettelkasten method, german for "slip-box" is a bi-directional referencing framework for notes enabling a web of thought to develop for a certain idea. Notes should be simple and short. Org Roam does this by creating a unique ~ref~ id per note and inserting all note references into a database for more performative lookups.
+
+Along with this, Org Roam comes with some useful tooling like capture templates for creating all kinds of notes which can be useful outside of just generic note taking in a scholastic sense. Also, it includes a daily journal system which also can be utilised in a number of ways.
+
+The point I wish to emphasise is that Org Roam and it's baseline features will be the foundation tooling of an ecosystem of ~.org~ files which I will use to manage my life. It will also heavily use ~org-agenda~ and maybe even so far as integrating email. As I have multiple machines, typically a laptop, desktop and maybe even a phone, notes ought to be synced between devices automatically. Syncthing is a good solution for this but a more systematic approach of a cloud server to do periodic git updates as backups might prove useful.
+In effect, it will be a large substrate data layer on top of my OS which emacs knows how to parse and update. Luckily, since NixOS has emerged, this is a lot easier to maintain. 
+
+The general structure I wish to have is as follows:
+
+- Everything exists under ~~/notes~
+- An ~inbox.org~ for capturing random notes
+  - Alternatively, this could be done using the daily file?
+- All conceptual notes either exists within a flat hierarchy in the top-level directory or under a folder
+- Management of note structure and categorisation is maintained through capture templates
+  - This will incur some degree of manual labor if things change
+- Agenda specific notes come in two kinds
+  - "chores" which are a catchall for buckets of tasks I have to do as a part of my life
+    - Think doctors appointments, or to clean the house
+    - Or things I might like to buy
+    - Maybe these are better referred to as LIFE notes as the catchall
+    - The sole intent is to be a place I can insert tasks related to that category
+    - E.g, my car needs to be serviced, there should be a Car note which I can use to insert a task for that
+    - I would expect notes like this can live in a single file, maybe life.org with each category as note headings such that they can be referenced by org-roam
+  - Project notes are the other kind
+    - These should follow a specific structure, at least identifiable as a project
+    - Can vary to all kinds of things like
+      - Managing a software project
+      - Buying a house
+      - Personal Finances
+      - A blog
+      - Even this org configuration
+    - Are more closely related to informational notes and will often link to them
+    - All project files should live under ~~/notes/projects~ 
+    - In terms of structure, headings like below can be used
+      - "Tasks", for bucketing project specific tasks
+      - "Purpose/Description", what does this project do?
+      - "Notes", general purpose heading
+      - "Links", links related to the project
+    - Projects should be uniquely identified, like a url reference, but not always necessary
+    - There can be different types of projects which might extend the general structure 
+      - software project
+        - could include a kanban board
+        - reference github as unique identifier
+        - automatically link to cloned repository under ~~/code~
+      - health/fitness tracking
+        - Goals could be a concrete task type
+        - Could extract sleep information from whatever app I'm using
+        - Recipe's for certain meals - can be used to reference a shopping list
+      - running a business
+        - Collecting meeting notes
+        - Managing finances
+        - daily journal
+    - Project notes are a broad category of long lived or perpetual tasks
+      - Are what I make of them
+      - Most important point is that they keep track of the state of that project and are a vessel for thinking about that project
+    - Project notes can and should reference each other
+      - Could create a project note for a job I work at
+      - This should reference software project notes I work at
+      - This could cause some confusion though because should content relating to a meeting for say a website go in the work project note or the software project note.
+      - In such cases I think that a separate <company_name> directory should be created for any notes which go in there
+        - This would allow for a clear delineation between notes specific to that job
+    - One important addition is for my emacs configuration to be clever enough to dynamically create capture templates for each instance
+      - In theory, it ought to be possible to include emacs configuration around my notes, but this might be overkill
+- Daily notes
+  - These are used primarily for journaling
+  - Could also be used for capturing fleeting notes or todos like inbox.org is tradtionally used
+  - I have been thinking on including it as a way to archive tasks
+    - Say a task was completed on date X
+    - And org-expiry is setup with an expiry of X + 1 week/month
+    - I would want to create an archival system which automatically collects all finished tasks
+    - It should archive those tasks from the file they existed in as entries in the daily file corresponding to the day they were completed
+    - This will reduce clutter
+    - Recurring tasks may be problematic as they hang around but enough elisp-fu should make it work
+      - Could use all logging entries as information to create the document
+    - Ideally, because this involves editing multiple files, the elisp function should enforce a clean git tree in order for any archiving to commence and should possibly leave commit when finished.
+    - As the changes are quite destructive, to "undo" where things break is only possible really with git.
+    - Specifying an expiry after todos are put in a finished state can also provide stronger assurances that a specific task is "finished"
+- Link notes
+  - Link notes are essentially anything which is found on the internet with a url
+  - Can be anything from news articles, blogs, videos, comments, photos
+  - This is essentially a bookmarking bucket
+  - I don't envisage a huge amount of note-taking on the basis of
+  - In reality, it could serve as a way of wrapping external links with this system
+    - Say I have a software project for some tool, like Nix.
+    - I have a link for an article someone wrote about using Nix
+    - In my Nix project note, I can insert a link note using a capture template using the url
+    - Chatgpt-shell/khoj could come in use here
+    - I did read about some AI project which could do video summaries
+  - By virtue of the type of material, minimal noting should suffice.
+    - An interesting video about politics could be added but it doesn't need to be integrated into a mind map
+    - If it can be all the better but it is not a requirement
+  - One of the things I want to add is the use of tagging for creating a bookmark system for accessing content I always consume
+    - A particular website like youtube might have its own note which I add a bookmark tag to
+    - Using external tooling, I can parse my link files to generate a list of websites I frequently visit
+    - Also I can extend this methodology further with external tooling to look up old links through tags
+- Literature notes
+  - This is one I am not too sure on including and may not come to pass yet
+  - org has a host of tooling for doing academic level research which might come in handy
+    - zotero is used for collecting, organizing and citing research
+    - org-bibtex/org-roam-bibtex does citation management with the former
+    - org-noter, used for side-by-side paper annotating, note-taking, quotes
+  - https://rgoswami.me/posts/org-note-workflow/
+  - This would be nice to include for making notes about books
+  - Also would come in handy for reading papers
+  - Same as with links and projects, there are differing categories which can be included
+    - books
+    - films
+    - papers
+    - journals
+    - Somewhat dependent on zotero
+  - Literature notes and Link notes are somewhat similar
+    - Ultimate difference is that Literature notes is physical knowledge
+      - Even though it has a digital presence
+    - Link notes are knowledge which is primarily internet-based content
+- People notes
+  - Often note taking will reference people
+  - Some of these may be personal
+    - Which is good for organizing contact numbers, birthday reminders, emails
+    - These could go into a people.org file
+    - Not entirely necessary to include outside of certain situations
+  - Projects may include a people file for referencing people   
+  - Also could be notes related to people of relevance
+    - i.e, Napolean Bonaparte
+  - Maybe to have a ~~/notes/people/~ might be the best approach 
+- Other structures may emerge for various interests but in general, things should be left as non-hierarchial as possible unless abundantly obvious
+
+** Agenda
 * Project Management
 
 Manage projects using projectile
