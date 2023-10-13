@@ -696,11 +696,14 @@ There are a lot of
 #+begin_src emacs-lisp
 (setq org-todo-keywords
       '((sequence
-         "TODO(t)" ;; Standard task
-         "PROG(s)" ;; For when a task is in progress
-         "NEXT(n)" ;; For a task to do next
-         "IDEA(i)" ;; For when a task could be done in the future
-         "|" ;; 
+         "TODO(t)" ;; A task that needs doing and is ready to do
+         "PROG(p)" ;; A task that is in progress
+         "NEXT(n)" ;; A task which should be done next
+         "IDEA(i)" ;; A task which might occur
+         "WAIT(w)" ;; A task which is held up for an external reason
+         "HOLD(h)" ;; A task which is paused
+         "NOTE(n)" ;; A task which serves as a reminder
+         "|" ;;
          "DONE(d)" ;; When a task is completed
          "KILL(c)" ;; When a task is rejected
          )))
