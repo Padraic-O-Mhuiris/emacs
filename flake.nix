@@ -43,6 +43,7 @@
               with epkgs; [
                 visual-fill-column
                 embark
+                org-roam
                 embark-consult
                 esup
                 highlight-numbers
