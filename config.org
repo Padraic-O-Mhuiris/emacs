@@ -594,6 +594,9 @@ A very nice visualisation tool for tracing file changes in a tree hierarchy
 (global-undo-tree-mode)
 (setq undo-tree-visualizer-timestamps t)
 (setq undo-tree-visualizer-diff t)
+(setq undo-tree-show-help-in-visualize-buffer t)
+(setq undo-tree-auto-save-history t)
+(setq undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo"))))
 #+end_src
 
 * Git
