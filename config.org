@@ -393,9 +393,7 @@ For keybindings which haven't found their place in the config.
 (pm/leader
   "r" '(pm/reload-config :which-key "Reload config")
   "u" '(:ignore t :which-key "ui")
-  "ut" '(counsel-load-theme :which-key "Select Theme")
-  "m" '(:ignore t :which-key "magit")
-  "mm" '(magit-status-quick :which-key "status"))
+  "ut" '(counsel-load-theme :which-key "Select Theme"))
 #+end_src
 
 *** Esc Acts as Quit
@@ -609,6 +607,11 @@ The best git gui ever made
 (setopt magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1) ; What does this do?
 #+end_src
 
+#+begin_src emacs-lisp
+(pm/leader
+  "m" '(:ignore t :which-key "magit")
+  "mm" '(magit-status :which-key "status"))
+#+end_src
 * Org
 
 /Org/ is a versatile and powerful mode in Emacs designed for keeping notes, maintaining to-do lists, planning projects, and authoring documents. It's built around a plain-text formatting system, making it platform-independent and easily readable outside of Emacs. Over the years, /Org/ has evolved into a robust toolset that can handle everything from personal task management to publishing, coding, and even scientific research.
