@@ -79,6 +79,7 @@
                 wrappers.emacs = {
                   basePackage = emacs;
                   pathAdd = with pkgs; [
+                    sqlite
                     (ripgrep.override { withPCRE2 = true; })
                     shellcheck
                     shfmt
