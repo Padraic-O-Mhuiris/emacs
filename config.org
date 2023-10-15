@@ -612,7 +612,17 @@ The best git gui ever made
 
 #+begin_src emacs-lisp
 (require 'org)
-#+end_src 
+#+end_src
+
+Also create a general.el keybind for org mode contexts
+
+#+begin_src emacs-lisp
+(pm/leader
+  "o" '(:ignore t :which-key "org"))
+
+;; (general-create-definer pm/leader-org
+;;   :prefix (pm/leader "o"))
+#+end_src
 
 ** Appearence and Behaviour
 
