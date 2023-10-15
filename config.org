@@ -1046,6 +1046,13 @@ If some elements are missing, they will be stripped out."
 (add-to-list 'org-roam-node-template-prefixes '("doom-tags" . "#"))
 (add-to-list 'org-roam-node-template-prefixes '("doom-type" . "@"))
 #+end_src
+
+*** Assign ~SPC n f~ for notes buffer toggle
+
+#+begin_src emacs-lisp
+(pm/leader
+  "nf" '(org-roam-node-find :which-key "find note"))
+#+end_src
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
