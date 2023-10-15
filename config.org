@@ -1053,6 +1053,21 @@ If some elements are missing, they will be stripped out."
 (pm/leader
   "nf" '(org-roam-node-find :which-key "find note"))
 #+end_src
+
+*** Don't prompt when capture is aborted
+
+#+begin_src emacs-lisp
+(defun pm/return-t (orig-fun &rest args)
+  t)
+(defun pm/disable-yornp (orig-fun &rest args)
+  (advice-add 'yes-or-no-p :around #'pm/return-t)
+  (advice-add 'y-or-n-p :around #'pm/return-t)
+  (let ((res (apply orig-fun args)))
+    (advice-remove 'yes-or-no-p #'pm/return-t)
+    (advice-remove 'y-or-n-p #'pm/return-t)
+    res))
+(advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
+#+end_src
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
