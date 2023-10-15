@@ -1045,8 +1045,23 @@ If some elements are missing, they will be stripped out."
 #+end_src
 ** Agenda
 
+*** Gather ~.org~ files relevant for agenda
+
+We recurse everything under ~org-directory~
+
 #+begin_src elisp
-(custom-set-variables '(org-agenda-files (directory-files-recursively org-directory org-agenda-file-regexp)))
+(setopt org-agenda-files (directory-files-recursively org-directory org-agenda-file-regexp))
+#+end_src
+
+*** Assign ~SPC o a~ as agenda menu
+
+#+begin_src emacs-lisp
+(defun pm/org-agenda-menu ()
+  (interactive)
+  (org-agenda))
+
+(pm/leader
+  "oa" '(pm/org-agenda-menu :which-key "agenda"))
 #+end_src
 
 * Project Management
