@@ -712,7 +712,7 @@ Prevents edits to content hidden under a folded heading
 
 Org mode in Emacs for task management is a powerful way to organize, prioritize, and track tasks and projects. The flexibility of Org mode allows users to create a system tailored to their unique needs.
 
-*** "TODO" States
+*** ~TODO~ States
 
 By default, org mode provides two states, ~TODO~ and ~DONE~ which are used to describe and manage a task. The below keyword states provide a base outline on how tasks are defined and managed across the duration of their lifetime.
 
@@ -797,7 +797,7 @@ The ~ORDERED~ property restricts sequential TODO's under a heading to be assigne
 #+end_src
 
 ** Notes
-
+*** Structure
 The notes system I wish to create encompasses many areas but in general it is desired to become my /Personal Knowledge Management System/ - which in short is a process of collecting information that I can use to gather, classify, store, search, retrieve and share knowledge on my daily activities.
 
 One of the major requirements in this is that it should be reasonably easy to use. It should be accepted that cruft will build up and breaking changes may emerge where process of note-taking or management is removed or edited. Building a custom Emacs configuration intends to tailor this for me such that it is reasonably easy to build on.
