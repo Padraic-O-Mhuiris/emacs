@@ -942,6 +942,12 @@ The general structure I wish to have is as follows:
   - Could also include a ~~/notes/emacs/~ directory to contain notes for emacs packages and content
   - This file could be split into constituent notes and the tangling could compose all code blocks together
   - Might be a bit cumbersome but would make things very easily referenceable
+*** Assign ~SPC n~ for notes
+
+#+begin_src emacs-lisp
+(pm/leader
+  "n" '(:ignore t :which-key "notes"))
+#+end_src
 
 *** Set ~org-directory~
 
