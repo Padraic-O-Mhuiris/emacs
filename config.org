@@ -14,7 +14,6 @@ https://github.com/alphapapa/unpackaged.el#org-return-dwim
 ** IDEAs
 *** IDEA Autoload all projects with .git
 The idea is that all .git projects found under ~~/code~ or some other listed directory paths should be automatically listed. When searching through projects, the most recent edited or committed to should be listed first in that order
-
 *** IDEA Set ~:EXPIRY:~ attribute when done to auto-archive finished todos
 :PROPERTIES:
 :ORDERED:  t
@@ -414,20 +413,20 @@ Configuration regarding the emacs appearence should go here
 doom-themes is a popular collection of emacs themes. 
 
 #+begin_src emacs-lisp
-(require 'doom-themes)
-(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-      doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;; (require 'doom-themes)
+;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;;       doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-(unless pm/initialized (load-theme 'doom-moonlight t)) ; only call on initialization
-(doom-themes-visual-bell-config)
-(doom-themes-org-config)
+(unless pm/initialized (load-theme 'modus-vivendi t)) ; only call on initialization
+;; (doom-themes-visual-bell-config)
+;; (doom-themes-org-config)
 #+end_src
 ** Font
 
 Iosevka is a nice font
 
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil :font "Iosevka NFM" :height 100)
+(set-face-attribute 'default nil :font "Iosevka Comfy Fixed" :height 100)
 #+end_src 
 
 ** Icons
@@ -548,6 +547,7 @@ When ~tab-always-indent~ is set to ~complete~, pressing TAB will first try to in
 #+begin_src emacs-lisp
 (setq-default tab-always-indent 'complete)
 #+end_src
+
 ** ~evil~
 
 For those who like to use vim in emacs
