@@ -15,3 +15,7 @@ elpa/
 history
 straight/
 transient/
+undo/
+var/
+config.el
+functions.el
