@@ -45,6 +45,11 @@
                 embark
                 org-roam
                 embark-consult
+                consult
+                consult-projectile
+                consult-org-roam
+                consult-notes
+                consult-dir
                 esup
                 highlight-numbers
                 marginalia

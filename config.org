@@ -1234,6 +1234,10 @@ Consult (short for "CONtextualized Subcommands LightweighT") is an Emacs package
 
 #+begin_src emacs-lisp
 (require 'consult)
+(require 'consult-projectile)
+(require 'consult-org-roam)
+(require 'consult-notes)
+(require 'consult-dir)
 #+end_src
 
 ** Annotations
