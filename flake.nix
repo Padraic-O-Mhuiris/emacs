@@ -57,6 +57,7 @@
                 corfu
                 orderless
                 all-the-icons
+                projectile
                 doom-modeline
                 doom-themes
                 modus-themes

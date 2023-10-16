@@ -1100,6 +1100,8 @@ We recurse everything under ~org-directory~
 Manage projects using projectile
 
 #+begin_src emacs-lisp
+(require 'projectile)
+
 ;; (use-package projectile  
 ;;   :straight t
 ;;   :diminish projectile-mode
