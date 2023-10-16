@@ -713,6 +713,21 @@ Fold headings at start
 (setq org-startup-folded t)
 #+end_src
 
+*** Timestamp
+
+We always want to record for each org file when it was last edited
+
+#+begin_src emacs-lisp
+(require 'time-stamp)
+
+(setq time-stamp-active t)
+(setq time-stamp-start "#\\+last_modified:[ \t]")
+(setq time-stamp-end "$")
+(setq time-stamp-format "\[%Y-%m-%d %a %H:%M\]")
+
+(add-hook 'before-save-hook #'time-stamp)
+#+end_src
+
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading
