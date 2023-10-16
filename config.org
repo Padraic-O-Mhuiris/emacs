@@ -1057,7 +1057,7 @@ If some elements are missing, they will be stripped out."
 
 #+begin_src emacs-lisp
 (pm/leader
-  "nf" '(org-roam-node-find :which-key "find note"))
+  "nf" '(org-roam-node-find :which-key "find/create note"))
 #+end_src
 
 *** Don't prompt when capture is aborted
