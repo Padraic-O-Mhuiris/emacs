@@ -1089,6 +1089,46 @@ If some elements are missing, they will be stripped out."
     res))
 (advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
 #+end_src
+
+*** Capturing
+
+Org capture templates is an easy way to automatically take a note, normal ~org-capture~ can be used in a variety of contexts and ways, however I will use ~org-roam-capture~ to create a note. Both systems work by using capture templates which will be specified for generating notes dependent for the various contexts of the PKMS.
+
+#+begin_src emacs-lisp
+(defvar pm/note-heading "#+title: ${title}\n#+created_at: %U\n#+last_modified: %U\n")
+
+(defun pm/note-heading-with-default-tag (tag)
+  (concat pm/note-heading "#+filetags :" (format "%s" tag) ":%^G\n"))
+
+(defun insert-node-as-str ()
+  "Call org-roam-node-insert and return a string."
+  (interactive)
+  (with-temp-buffer 
+    (org-roam-node-insert)
+    (buffer-string)))
+
+(defun pm/default-note-template ()
+  (concat pm/note-heading "\n%?"))
+
+(defun pm/link-note-template ()
+  (pm/note-heading-with-default-tag "link"))
+
+(defun pm/project-note-template ()
+  (concat (pm/note-heading-with-default-tag "project") "* Description\n%?\n* Links\n\n* Tasks\n\n"))
+#+end_src
+
+#+begin_src emacs-lisp
+(setopt org-roam-capture-templates
+        '(("d" "default" plain (function pm/default-note-template)
+           :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
+           :unnarrowed t)
+          ("p" "projects")
+          ("pd" "project default" plain (function pm/project-note-template)
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:ROAM_REFS: %^{URL_OF_PROJECT}\n:END:")
+           :unnarrowed t)
+          ))
+#+end_src
+
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
