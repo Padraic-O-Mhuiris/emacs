@@ -59,6 +59,7 @@
                 all-the-icons
                 doom-modeline
                 doom-themes
+                modus-themes
                 evil
                 evil-collection
                 general
