@@ -801,6 +801,11 @@ As org-mode does not come with a hook for ~org-insert-todo-heading~ we want to a
 ;; (add-hook 'org-after-todo-state-change-hook #'my/log-todo-creation-date)
 #+end_src
 
+#+begin_src emacs-lisp
+(setopt org-insert-heading-respect-content t)
+(setopt org-insert-todo-heading-respect-content t)
+#+end_src
+
 *** ~CREATED~ metadata timestamp
 
 For any ~TODO~ heading, a ~SCHEDULED~ or ~DEADLINE~  and ~CLOSED~ timestamp metadata can be assigned. This is useful metadata but also including ~CREATED~ would be useful.
