@@ -1160,6 +1160,29 @@ Org capture is used for quick assignment of information to "buckets". These are 
           ))
 #+end_src
 
+**** Templates
+
+These are a number of capture templates and associated variables which are used to construct different filepaths and
+
+#+begin_src emacs-lisp
+(defun pm/daily-note-file () (file "%/%Y/%m/%Y-%m-%d.org"))
+(defvar pm/heading-timestamps "#+created_at: %U\n#+last_modified: %U\n")
+(defvar pm/note-heading (concat "#+title: ${title}\n" pm/heading-timestamps))
+(defun pm/note-heading-with-default-tag (tag)
+  (concat pm/note-heading "#+filetags :" (format "%s" tag) ":%^G\n\n"))
+
+(defun pm/formatted-date-string ()
+  "Return a formatted date string for the given TIME."
+  (let* ((time (current-time))
+         (day (string-to-number (format-time-string "%d" time)))
+         (suffix (cond ((memq day '(11 12 13)) "th")
+                       ((= 1 (% day 10)) "st")
+                       ((= 2 (% day 10)) "nd")
+                       ((= 3 (% day 10)) "rd")
+                       (t "th"))))
+    (format-time-string (concat "%A, %e" suffix " of %B, %Y") time)))
+#+end_src
+
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
