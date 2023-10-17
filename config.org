@@ -413,13 +413,13 @@ Configuration regarding the emacs appearence should go here
 doom-themes is a popular collection of emacs themes. 
 
 #+begin_src emacs-lisp
-;; (require 'doom-themes)
-;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-;;       doom-themes-enable-italic t) ; if nil, italics is universally disabled
+(require 'doom-themes)
+(setq doom-themes-enable-bold t    
+      doom-themes-enable-italic t)
 
-(unless pm/initialized (load-theme 'modus-operandi-tinted t)) ; only call on initialization
-;; (doom-themes-visual-bell-config)
-;; (doom-themes-org-config)
+(unless pm/initialized (load-theme 'doom-nord-aurora t)) 
+(doom-themes-visual-bell-config)
+(doom-themes-org-config)
 #+end_src
 ** Font
 
@@ -1229,6 +1229,7 @@ For adding tasks to the daily file we create a wrapped function which works clea
 #+end_src
 
 Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
+
 #+begin_src emacs-lisp
 (setq org-roam-dailies-capture-templates
       `(("d" "default" entry
