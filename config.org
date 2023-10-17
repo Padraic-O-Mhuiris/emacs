@@ -1086,7 +1086,7 @@ If some elements are missing, they will be stripped out."
 (add-to-list 'org-roam-node-template-prefixes '("doom-type" . "@"))
 #+end_src
 
-*** Assign ~SPC n f~ for notes buffer toggle
+*** Assign ~SPC n f~ for finding/creating notes
 
 #+begin_src emacs-lisp
 (pm/leader
