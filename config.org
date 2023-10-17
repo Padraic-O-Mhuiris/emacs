@@ -1192,7 +1192,7 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 
 #+begin_src emacs-lisp
 (setq org-roam-dailies-capture-templates
-      `(("d" "default" entry
+      `(("d" "default" plain
          "%?"
          :target (file+head ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template)
          :unnarrowed t)
@@ -1201,13 +1201,15 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
          :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Journal"))
          :prepend t
          :unnarrowed t)
-        ("t" "task" plain
+        ("t" "task" entry
          "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
          :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Tasks"))
+         :prepend t
          :unnarrowed t)
-        ("i" "idea" plain
+        ("i" "idea" entry
          "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
          :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Ideas"))
+         :prepend t
          :unnarrowed t)
         ("l" "link" entry
          "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
