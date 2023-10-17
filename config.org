@@ -1093,6 +1093,13 @@ If some elements are missing, they will be stripped out."
   "nf" '(org-roam-node-find :which-key "find/create note"))
 #+end_src
 
+*** Assign ~SPC n s~ for searching notes buffer toggle
+
+#+begin_src emacs-lisp
+(pm/leader
+  "ns" '(consult-org-roam-search :which-key "search notes"))
+#+end_src
+
 *** Don't prompt when capture is aborted
 
 #+begin_src emacs-lisp
