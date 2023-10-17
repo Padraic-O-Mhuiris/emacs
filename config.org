@@ -1183,6 +1183,41 @@ These are a number of capture templates and associated variables which are used 
     (format-time-string (concat "%A, %e" suffix " of %B, %Y") time)))
 #+end_src
 
+**** Dailies
+
+Set the default directory under ~org-directory~
+
+#+begin_src emacs-lisp
+(setq org-roam-dailies-directory "daily/")
+#+end_src
+
+Intialise a default file path for each daily document to follow
+
+
+#+begin_src emacs-lisp
+(defun pm/org-insert-todo-subheading ()
+  (org-insert-todo-subheading))
+
+(setq org-roam-dailies-capture-templates
+      '(("d" "default" plain
+         "%?"
+         :target (file+head "%<%Y-%m-%d>.org" ":PROPERTIES:\n:ROAM_ALIASES: %<%Y-%m-%d>\n:END:\n#+title: %(pm/formatted-date-string)\n#+filetags :daily:\n\n* Journal\n\n* Tasks\n\n* Links\n\n")
+         :unnarrowed t)
+        ("t" "Tasks" plain
+         "** TODO %? %(org-insert-todo-heading-respect-content)"
+         :target (file+head+olp "%<%Y-%m-%d>.org" ":PROPERTIES:\n:ROAM_ALIASES: %<%Y-%m-%d>\n:END:\n#+title: %(pm/formatted-date-string)\n#+filetags :daily:\n* Journal\n* Tasks\n* Links\n" ("Tasks"))
+         :unnarrowed t
+         :empty-lines 1
+         :prepend t)
+        ("l" "link" entry
+         "** LINK %(org-cliplink-capture)"
+         :target (file+head+olp "%<%Y-%m-%d>.org" ":PROPERTIES:\n:ROAM_ALIASES: %<%Y-%m-%d>\n:END:\n#+title: %(pm/formatted-date-string)\n#+filetags :daily:\n\n* Journal\n\n* Tasks\n\n* Links\n\n" ("Links"))
+         :unnarrowed t
+         :prepend t)))
+#+end_src
+
+**** Projects
+**** Links
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
