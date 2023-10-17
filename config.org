@@ -820,7 +820,10 @@ And then add a specialised function always adds a ~CREATED~ timestamp property.
 (defun pm/org-add-created-timestamp ()
   (save-excursion
     (org-back-to-heading)
-    (org-expiry-insert-created)))
+    (org-set-property "CREATED"
+                      (format-time-string
+                       (org-time-stamp-format 'long 'inactive)
+                       (org-current-time)))))
 
 (add-hook 'pm/org-insert-todo-heading-hook 'pm/org-add-created-timestamp) 
 #+end_src
