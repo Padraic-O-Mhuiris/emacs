@@ -830,17 +830,16 @@ And then add a specialised function always adds a ~CREATED~ timestamp property.
 
 (add-hook 'pm/org-insert-todo-heading-hook 'pm/org-add-created-timestamp) 
 #+end_src
-
 *** Add ~ORDERED~ property for any TODO heading
 
 The ~ORDERED~ property restricts sequential TODO's under a heading to be assigned as ~DONE~ until the previous ~TODO~ is. This enforces that tasks and subtasks are described in the order they are to be completed. 
 
 #+begin_src emacs-lisp
-(defun pm/org-todo-heading-add-ordered-property ()
-  (when (org-at-heading-p)
-    (org-set-property "ORDERED" "t")))
+;; (defun pm/org-todo-heading-add-ordered-property ()
+;;   (when (org-at-heading-p)
+;;     (org-set-property "ORDERED" "t")))
 
-(add-hook 'pm/org-insert-todo-heading-hook 'pm/org-todo-heading-add-ordered-property)
+;; (add-hook 'pm/org-insert-todo-heading-hook 'pm/org-todo-heading-add-ordered-property)
 #+end_src
 
 ** Notes
