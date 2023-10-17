@@ -1218,6 +1218,38 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
          :immediate-finish t)))
 #+end_src
 
+Add shortcuts so capturing can be done immediately on key press
+
+#+begin_src emacs-lisp
+(defun pm/org-roam-dailies-today-default ()
+  (interactive)
+  (org-roam-dailies-goto-today "d"))
+
+(defun pm/org-roam-dailies-today-journal ()
+  (interactive)
+  (org-roam-dailies-capture-today nil "j"))
+
+(defun pm/org-roam-dailies-today-task ()
+  (interactive)
+  (org-roam-dailies-capture-today nil "t"))
+
+(defun pm/org-roam-dailies-today-idea ()
+  (interactive)
+  (org-roam-dailies-capture-today nil "i"))
+
+(defun pm/org-roam-dailies-today-link ()
+  (interactive)
+  (org-roam-dailies-capture-today nil "l"))
+
+(pm/leader
+  "nd" '(:ignore t :which-key "daily notes")
+  ;; "ndd" '(org-roam-dailies-goto-today :which-key "goto daily note")
+  "ndd" '(pm/org-roam-dailies-today-default :which-key "goto daily note")
+  "ndj" '(pm/org-roam-dailies-today-journal :which-key "capture journal entry")
+  "ndt" '(pm/org-roam-dailies-today-task :which-key "capture task")
+  "ndi" '(pm/org-roam-dailies-today-idea :which-key "capture idea")
+  "ndl" '(pm/org-roam-dailies-today-link :which-key "capture link"))
+#+end_src
 **** Projects
 
 #+begin_src emacs-lisp
