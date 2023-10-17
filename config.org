@@ -1106,7 +1106,7 @@ Org capture templates is an easy way to automatically take a note, normal ~org-c
 (defvar pm/note-heading "#+title: ${title}\n#+created_at: %U\n#+last_modified: %U\n")
 
 (defun pm/note-heading-with-default-tag (tag)
-  (concat pm/note-heading "#+filetags :" (format "%s" tag) ":%^G\n"))
+  (concat pm/note-heading "#+filetags :" (format "%s" tag) ":%^G\n\n"))
 
 (defun insert-node-as-str ()
   "Call org-roam-node-insert and return a string."
@@ -1123,6 +1123,21 @@ Org capture templates is an easy way to automatically take a note, normal ~org-c
 
 (defun pm/project-note-template ()
   (concat (pm/note-heading-with-default-tag "project") "* Description\n%?\n* Links\n\n* Tasks\n\n"))
+#+end_src
+
+Org capture is used for quick assignment of information to "buckets". These are one-time tasks which are to be recategorized or deleted later
+
+#+begin_src emacs-lisp
+(setopt org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/inbox.org" "Tasks")
+         "* TODO %?"
+         :prepend t
+         :unnarrowed t)
+        ("l" "Link" item (file "~/notes/links.org")
+         "- %(org-cliplink-capture)"
+         :prepend t
+         :unnarrowed t)
+        ))
 #+end_src
 
 #+begin_src emacs-lisp
