@@ -760,14 +760,17 @@ Extending this behaviour we can add more states which offer a generic way of tra
          "TODO(t)" ;; A task that needs doing and is ready to do
          "PROG(p!)" ;; A task that is in progress
          "NEXT(n!)" ;; A task which should be done next
-         "IDEA(i!)" ;; A task which might occur
          "WAIT(w@/!)" ;; A task which is held up for an external reason
          "HOLD(h@/!)" ;; A task which is paused
          "|" ;;
          "DONE(d!)" ;; When a task is completed
          "KILL(k@/!)" ;; When a task is rejected
          )
-        (sequence "NOTE" "|")))
+        (sequence
+         "NOTE" ;; Not necessary for agenda, just for highlighting in places
+         "LINK" ;; A naked url which is to be changed to a link note
+         "IDEA" ;; A piece of information which might manifest into something
+         "|")))
 #+end_src
 
 It is to be noted that TODO states can be defined per-file, which may come in handy for prescribing behaviour for certain notes/documents.
