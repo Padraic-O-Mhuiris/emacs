@@ -44,6 +44,7 @@
                 visual-fill-column
                 embark
                 org-roam
+                org-cliplink
                 embark-consult
                 consult
                 consult-projectile

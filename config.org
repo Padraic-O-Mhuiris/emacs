@@ -728,6 +728,14 @@ We always want to record for each org file when it was last edited
 (add-hook 'before-save-hook #'time-stamp)
 #+end_src
 
+*** Links
+
+Naked urls are fine but it is preferred to use ~org-cliplink~ as a way to gather extra info
+
+#+begin_src emacs-lisp
+(require 'org-cliplink)
+#+end_src
+
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading
