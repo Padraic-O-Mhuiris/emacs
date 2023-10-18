@@ -1090,14 +1090,14 @@ If some elements are missing, they will be stripped out."
 
 #+begin_src emacs-lisp
 (pm/leader
-  "nf" '(org-roam-node-find :which-key "find/create note"))
+  "nf" '(org-roam-node-find :which-key "Find note"))
 #+end_src
 
 *** Assign ~SPC n s~ for searching notes buffer toggle
 
 #+begin_src emacs-lisp
 (pm/leader
-  "ns" '(consult-org-roam-search :which-key "search notes"))
+  "ns" '(consult-org-roam-search :which-key "Search notes"))
 #+end_src
 
 *** Don't prompt when capture is aborted
@@ -1185,11 +1185,20 @@ The default capture template for all notes should consist of at least the follow
 
 #+begin_src emacs-lisp
 (defvar pm/note-name-template "%<%Y-%m-%d>-${slug}.org")
-;; (setopt org-roam-capture-templates
-;;         `(("d" "default" plain
-;;            "%?"
-;;            :target (file+head ,pm/note-name-template ,pm/note-head-template)
-;;            :unnarrowed t)))
+(defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
+(setopt org-roam-capture-templates
+        `(("d" "default" plain
+           "%?"
+           :target (file+head ,pm/note-name-template ,pm/note-head-template)
+           :unnarrowed t
+           :empty-lines-before 1)))
+
+(defun pm/note-default ()
+  (interactive)
+  (org-roam-capture nil "d"))
+
+(pm/leader
+  "nn" '(pm/note-default :which-key "Create note"))
 #+end_src
 
 **** Dailies
