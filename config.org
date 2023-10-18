@@ -1166,7 +1166,6 @@ These are a number of capture templates and associated variables which are used 
         (refs (or (cl-remove-if-not #'stringp (plist-get args :refs)) `()))
         (headings (or (plist-get args :headings) `()))
         (prompt-for-tags (or (plist-get args :prompt-for-tags) nil))
-        (content (or (plist-get args :content) nil))
         (created "#+created_at: %U")
         (modified "#+last_modified: %U"))
     (let
