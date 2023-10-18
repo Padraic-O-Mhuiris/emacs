@@ -1142,6 +1142,15 @@ These are a number of capture templates and associated variables which are used 
           lst
         (cons (car lst) (cons value (pm/intersperse rest-of-list value)))))))
 
+(defun pm/list-to-org (lst &optional level)
+  (unless level (setq level 1))
+  (mapconcat (lambda (item)
+               (if (listp item)
+                   (pm/list-to-org item (1+ level))
+                 (concat (make-string level ?*) " " item "\n\n")))
+             lst
+             ""))
+
 (defun pm/note-head-template (&rest args)
   "This function is the default builder for all note templates. It expects a series of keys and values in each case:
 
@@ -1151,31 +1160,52 @@ These are a number of capture templates and associated variables which are used 
 :prompt-for-tags - expect boolean, will add prompting for tags
 :content - expects string, if not specified, is not included
 "
-  (let ((alias (or (plist-get args :alias) nil))
-        (title (or (plist-get args :title) "${title}"))
+  (let ((title (or (plist-get args :title) "${title}"))
         (tags (or (cl-remove-if-not #'stringp (plist-get args :tags)) `()))
+        (aliases (or (cl-remove-if-not #'stringp (plist-get args :aliases)) `()))
+        (refs (or (cl-remove-if-not #'stringp (plist-get args :refs)) `()))
+        (headings (or (plist-get args :headings) `()))
         (prompt-for-tags (or (plist-get args :prompt-for-tags) nil))
         (content (or (plist-get args :content) nil))
         (created "#+created_at: %U")
         (modified "#+last_modified: %U"))
     (let
-        ((stringified-tags (if (> (length tags) 0)
-                               (apply #'concat
-                                  `(,(if (> (length tags) 0) ":" "")
-                                    ,(apply #'concat (pm/intersperse tags ":"))
-                                    ,(if (> (length tags) 0) ":" "")
-                                    ,(if prompt-for-tags "%^G" "")))
-                             nil)))
+        ((file-tags (if (or
+                         (> (length tags) 0)
+                         prompt-for-tags)
+                        (apply #'concat
+                               `("#+filetags: "
+                                 ,(if (> (length tags) 0) ":" "")
+                                 ,(apply #'concat (pm/intersperse tags ":"))
+                                 ,(if (> (length tags) 0) ":" "")
+                                 ,(if prompt-for-tags "%^G" "")))
+                      nil))
+         (properties (if (or
+                          (> (length refs) 0)
+                          (> (length aliases) 0))
+                         (apply #'concat
+                                `(":PROPERTIES:\n"
+                                  ,(if (> (length aliases) 0)
+                                       (concat ":ROAM_ALIASES: " (apply #'concat (pm/intersperse refs " ")) "\n")
+                                     "")
+                                  ,(if (> (length refs) 0)
+                                       (concat ":ROAM_REFS: " (apply #'concat (pm/intersperse refs " ")) "\n")
+                                     "")
+                                  ":END:"))
+                       nil))
+         (olp (if (> (length headings) 0)
+                  (pm/list-to-org headings)
+                nil)))
       (apply #'concat
              (pm/intersperse
               (cl-remove-if
                'null
-               `(,(when alias (concat ":PROPERTIES:\n:ROAM_ALIASES: " alias "\n:END:"))
+               `(,(when properties properties)
                  ,(concat "#+title: " title)
                  ,created
                  ,modified
-                 ,(when stringified-tags (concat "#+filetags: " stringified-tags (if prompt-for-tags "%^G" "")))
-                 ,(when content content)))
+                 ,(when file-tags file-tags)
+                 ,(when olp (concat "\n" olp))))
               "\n")))))
 #+end_src
 
