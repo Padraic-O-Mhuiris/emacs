@@ -1215,7 +1215,7 @@ The default capture template for all notes should consist of at least the follow
 #+begin_src emacs-lisp
 (defvar pm/note-name-template "%<%s>__${slug}.org")
 (defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
-(defvar pm/aliased-note-head-template (pm/note-head-template :alias "%^{ALIAS}" :prompt-for-tags t))
+(defvar pm/aliased-note-head-template (pm/note-head-template :aliases '("%^{ALIAS}") :prompt-for-tags t))
 (setopt org-roam-capture-templates
         `(("d" "default" plain
            "%?"
@@ -1255,9 +1255,9 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 (defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
 (defvar pm/daily-note-head-template
   (pm/note-head-template
-   :alias "%<%Y-%m-%d>"
+   :aliases '("%<%Y-%m-%d>")
    :title "%(pm/formatted-date-string)"
-   :content "\n* Journal\n\n* Tasks\n\n* Ideas\n\n* Links\n"))
+   :headings '("Journal" "Tasks" "Ideas" "Links")))
 (setopt org-roam-dailies-capture-templates
         `(("d" "default" plain
            "%?"
