@@ -1117,33 +1117,11 @@ If some elements are missing, they will be stripped out."
 
 *** Capturing
 
-#+begin_src emacs-lisp
-(setopt org-roam-capture-templates
-        '(("d" "default" plain (function pm/default-note-template)
-           :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
-           :unnarrowed t)))
-#+end_src
-
 **** Templates
 
 These are a number of capture templates and associated variables which are used to construct different filepaths and
 
 #+begin_src emacs-lisp
-(defvar pm/heading-timestamps "#+created_at: %U\n#+last_modified: %U\n")
-
-(defun pm/note-heading-title (&optional title)
-  "Returns a note heading with a title"
-  (setq title (or title "${title}"))
-  (concat "#+title: " title "\n" pm/heading-timestamps))
-
-(defun pm/note-heading-tag (tag &optional prompt)
-  "Returns a note heading with tag and optional prompt to indicate if more tags should be selected"
-  (concat "#+filetags :" (format "%s" tag) ":" (when prompt "%^G\n")))
-
-(defun pm/note-heading-alias (&optional alias)
-  (setq alias (or alias "$^{ROAM_ALIAS}"))
-  (concat ":PROPERTIES:\n:#+ROAM_ALIASES: " alias "\n:END:\n"))
-
 (defun pm/formatted-date-string ()
   "Return a formatted date string for the given TIME."
   (let* ((time (current-time))
@@ -1154,6 +1132,63 @@ These are a number of capture templates and associated variables which are used 
                        ((= 3 (% day 10)) "rd")
                        (t "th"))))
     (format-time-string (concat "%A, %e" suffix " of %B, %Y") time)))
+
+(defun pm/intersperse (lst value)
+  "Intersperse LST with VALUE."
+  (if (null lst)
+      '()
+    (let ((rest-of-list (cdr lst)))
+      (if (null rest-of-list)
+          lst
+        (cons (car lst) (cons value (pm/intersperse rest-of-list value)))))))
+
+(defun pm/note-head-template (&rest args)
+  "This function is the default builder for all note templates. It expects a series of keys and values in each case:
+
+:alias - expects string, if not specified, is not included
+:title - expects string, if not otherwise specified, ${title}
+:tags - expects string, if not specified, is not included
+:prompt-for-tags - expect boolean, will add prompting for tags
+:content - expects string, if not specified, is not included
+"
+  (let ((alias (or (plist-get args :alias) nil))
+        (title (or (plist-get args :title) "${title}"))
+        (tags (or (plist-get args :tags) `()))
+        (prompt-for-tags (or (plist-get args :prompt-for-tags) nil))
+        (content (or (plist-get args :content) nil))
+        (created "#+created_at: %U")
+        (modified "#+last_modified: %U"))
+    (let
+        ((stringified-tags (apply #'concat
+                                  `(":"
+                                    ,(apply #'concat (pm/intersperse (cl-remove-if-not #'stringp tags) ":"))
+                                    ":"
+                                    ,(if prompt-for-tags "%^G" "")))))
+      (apply #'concat
+             (pm/intersperse
+              (cl-remove-if
+               'null
+               `(,(when alias (concat ":PROPERTIES:\n:#+ROAM_ALIASES: " alias "\n:END:"))
+                 ,(concat "#+title: " title)
+                 ,created
+                 ,modified
+                 ,(when stringified-tags (concat "#+filetags: " stringified-tags))
+                 "\n"
+                 ,(when content content)))
+              "\n")))))
+#+end_src
+
+**** Default
+
+The default capture template for all notes should consist of at least the following
+
+#+begin_src emacs-lisp
+(defvar pm/note-name-template "%<%Y-%m-%d>-${slug}.org")
+;; (setopt org-roam-capture-templates
+;;         `(("d" "default" plain
+;;            "%?"
+;;            :target (file+head ,pm/note-name-template ,pm/note-head-template)
+;;            :unnarrowed t)))
 #+end_src
 
 **** Dailies
@@ -1162,23 +1197,6 @@ Set the default directory under ~org-directory~
 
 #+begin_src emacs-lisp
 (setq org-roam-dailies-directory "daily/")
-#+end_src
-
-Initialise the default daily filename template
-
-#+begin_src emacs-lisp
-(defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
-#+end_src
-
-Initialise the default heading string which is to be used by all daily capture templates
-
-#+begin_src emacs-lisp
-(defvar pm/daily-note-head-template
-  (concat
-   (pm/note-heading-alias "%<%Y-%m-%d>")
-   (pm/note-heading-title "%(pm/formatted-date-string)")
-   (pm/note-heading-tag "daily")
-   "\n* Journal\n\n* Tasks\n\n* Ideas\n\n* Links\n\n"))
 #+end_src
 
 For adding tasks to the daily file we create a wrapped function which works cleaner
@@ -1192,31 +1210,37 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 
 #+begin_src emacs-lisp
 (setq org-roam-dailies-capture-templates
-      `(("d" "default" plain
-         "%?"
-         :target (file+head ,pm/daily-note-name-template ,pm/daily-note-head-template)
-         :unnarrowed t)
-        ("j" "journal" item
-         "- %<%T> :: %?"
-         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
-         :prepend t
-         :unnarrowed t)
-        ("t" "task" entry
-         "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Tasks"))
-         :prepend t
-         :unnarrowed t)
-        ("i" "idea" entry
-         "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Ideas"))
-         :prepend t
-         :unnarrowed t)
-        ("l" "link" entry
-         "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Links"))
-         :unnarrowed t
-         :prepend t
-         :immediate-finish t)))
+      (let ((daily-note-name-template  "%<%Y-%m-%d>.org")
+            (daily-note-head-template (pm/note-head-template
+                                       :alias "%<%Y-%m-%d>"
+                                       :title "%(pm/formatted-date-string)"
+                                       :content "* Journal\n* Tasks\n* Ideas\n* Links\n"
+                                       )))
+        `(("d" "default" plain
+           "%?"
+           :target (file+head ,pm/daily-note-name-template ,daily-note-head-template)
+           :unnarrowed t)
+          ("j" "journal" item
+           "- %<%T> :: %?"
+           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Journal"))
+           :prepend t
+           :unnarrowed t)
+          ("t" "task" entry
+           "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Tasks"))
+           :prepend t
+           :unnarrowed t)
+          ("i" "idea" entry
+           "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Ideas"))
+           :prepend t
+           :unnarrowed t)
+          ("l" "link" entry
+           "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Links"))
+           :unnarrowed t
+           :prepend t
+           :immediate-finish t))
 #+end_src
 
 Add shortcuts so capturing can be done immediately on key press
