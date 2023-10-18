@@ -1187,7 +1187,6 @@ The default capture template for all notes should consist of at least the follow
 (defvar pm/note-name-template "%<%s>__${slug}.org")
 (defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
 (defvar pm/aliased-note-head-template (pm/note-head-template :alias "%^{ALIAS}" :prompt-for-tags t))
-;;(setopt org-roam-capture-templates `())
 (setopt org-roam-capture-templates
         `(("d" "default" plain
            "%?"
@@ -1292,15 +1291,6 @@ Add shortcuts so capturing can be done immediately on key press
 **** Projects
 
 #+begin_src emacs-lisp
-;; (setopt org-roam-capture-templates
-;;         '(("d" "default" plain (function pm/default-note-template)
-;;            :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
-;;            :unnarrowed t)
-;;           ("p" "projects")
-;;           ("pd" "project default" plain (function pm/project-note-template)
-;;            :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" ":PROPERTIES:\n:ROAM_REFS: %^{URL_OF_PROJECT}\n:END:")
-;;            :unnarrowed t)
-;;           ))
 #+end_src
 
 **** Links
