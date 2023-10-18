@@ -1184,7 +1184,7 @@ These are a number of capture templates and associated variables which are used 
 The default capture template for all notes should consist of at least the following
 
 #+begin_src emacs-lisp
-(defvar pm/note-name-template "%<%Y-%m-%d>-${slug}.org")
+(defvar pm/note-name-template "%<%s>__${slug}.org")
 (defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
 (setopt org-roam-capture-templates
         `(("d" "default" plain
