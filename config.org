@@ -1122,9 +1122,14 @@ If some elements are missing, they will be stripped out."
 These are a number of capture templates and associated variables which are used to construct different filepaths and
 
 #+begin_src emacs-lisp
-(defun pm/formatted-date-string ()
-  "Return a formatted date string for the given TIME."
-  (let* ((time (current-time))
+(defun pm/formatted-date-string (&optional day-offset)
+  "Return a formatted date string for the given DAY-OFFSET.
+If DAY-OFFSET is nil or 0, return today's date.
+If DAY-OFFSET is 1, return tomorrow's date.
+If DAY-OFFSET is -1, return yesterday's date."
+  (let* ((time (if day-offset
+                   (time-add (current-time) (days-to-time day-offset))
+                 (current-time)))
          (day (string-to-number (format-time-string "%d" time)))
          (suffix (cond ((memq day '(11 12 13)) "th")
                        ((= 1 (% day 10)) "st")
