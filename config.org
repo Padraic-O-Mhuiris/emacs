@@ -1285,7 +1285,11 @@ We recurse everything under ~org-directory~
 (pm/leader
   "oa" '(pm/org-agenda-menu :which-key "agenda"))
 #+end_src
+*** Fix window
 
+#+begin_src emacs-lisp
+(setq org-agenda-restore-windows-after-quit t)
+#+end_src
 * Project Management
 
 Manage projects using projectile
