@@ -1153,17 +1153,19 @@ These are a number of capture templates and associated variables which are used 
 "
   (let ((alias (or (plist-get args :alias) nil))
         (title (or (plist-get args :title) "${title}"))
-        (tags (or (plist-get args :tags) `()))
+        (tags (or (cl-remove-if-not #'stringp (plist-get args :tags)) `()))
         (prompt-for-tags (or (plist-get args :prompt-for-tags) nil))
         (content (or (plist-get args :content) nil))
         (created "#+created_at: %U")
         (modified "#+last_modified: %U"))
     (let
-        ((stringified-tags (apply #'concat
-                                  `(":"
-                                    ,(apply #'concat (pm/intersperse (cl-remove-if-not #'stringp tags) ":"))
-                                    ":"
-                                    ,(if prompt-for-tags "%^G" "")))))
+        ((stringified-tags (if (> (length tags) 0)
+                               (apply #'concat
+                                  `(,(if (> (length tags) 0) ":" "")
+                                    ,(apply #'concat (pm/intersperse tags ":"))
+                                    ,(if (> (length tags) 0) ":" "")
+                                    ,(if prompt-for-tags "%^G" "")))
+                             nil)))
       (apply #'concat
              (pm/intersperse
               (cl-remove-if
@@ -1172,8 +1174,7 @@ These are a number of capture templates and associated variables which are used 
                  ,(concat "#+title: " title)
                  ,created
                  ,modified
-                 ,(when stringified-tags (concat "#+filetags: " stringified-tags))
-                 "\n"
+                 ,(when stringified-tags (concat "#+filetags: " stringified-tags (if prompt-for-tags "%^G" "")))
                  ,(when content content)))
               "\n")))))
 #+end_src
@@ -1209,38 +1210,38 @@ For adding tasks to the daily file we create a wrapped function which works clea
 Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 
 #+begin_src emacs-lisp
-(setq org-roam-dailies-capture-templates
-      (let ((daily-note-name-template  "%<%Y-%m-%d>.org")
-            (daily-note-head-template (pm/note-head-template
-                                       :alias "%<%Y-%m-%d>"
-                                       :title "%(pm/formatted-date-string)"
-                                       :content "* Journal\n* Tasks\n* Ideas\n* Links\n"
-                                       )))
+(defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
+(defvar pm/daily-note-head-template
+  (pm/note-head-template
+   :alias "%<%Y-%m-%d>"
+   :title "%(pm/formatted-date-string)"
+   :content "* Journal\n\n* Tasks\n\n* Ideas\n\n* Links\n"))
+(setopt org-roam-dailies-capture-templates
         `(("d" "default" plain
            "%?"
-           :target (file+head ,pm/daily-note-name-template ,daily-note-head-template)
+           :target (file+head pm/daily-note-name-template pm/daily-note-head-template)
            :unnarrowed t)
           ("j" "journal" item
            "- %<%T> :: %?"
-           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Journal"))
+           :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
            :prepend t
            :unnarrowed t)
           ("t" "task" entry
            "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Tasks"))
+           :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Tasks"))
            :prepend t
            :unnarrowed t)
           ("i" "idea" entry
            "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Ideas"))
+           :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Ideas"))
            :prepend t
            :unnarrowed t)
           ("l" "link" entry
            "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-           :target (file+head+olp ,pm/daily-note-name-template ,daily-note-head-template ("Links"))
+           :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Links"))
            :unnarrowed t
            :prepend t
-           :immediate-finish t))
+           :immediate-finish t)))
 #+end_src
 
 Add shortcuts so capturing can be done immediately on key press
