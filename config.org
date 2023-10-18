@@ -1170,7 +1170,7 @@ These are a number of capture templates and associated variables which are used 
              (pm/intersperse
               (cl-remove-if
                'null
-               `(,(when alias (concat ":PROPERTIES:\n:#+ROAM_ALIASES: " alias "\n:END:"))
+               `(,(when alias (concat ":PROPERTIES:\n:ROAM_ALIASES: " alias "\n:END:"))
                  ,(concat "#+title: " title)
                  ,created
                  ,modified
