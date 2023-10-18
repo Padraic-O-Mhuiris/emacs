@@ -1186,10 +1186,17 @@ The default capture template for all notes should consist of at least the follow
 #+begin_src emacs-lisp
 (defvar pm/note-name-template "%<%s>__${slug}.org")
 (defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
+(defvar pm/aliased-note-head-template (pm/note-head-template :alias "%^{ALIAS}" :prompt-for-tags t))
+;;(setopt org-roam-capture-templates `())
 (setopt org-roam-capture-templates
         `(("d" "default" plain
            "%?"
            :target (file+head ,pm/note-name-template ,pm/note-head-template)
+           :unnarrowed t
+           :empty-lines-before 1)
+          ("a" "aliased" plain
+           "%?"
+           :target (file+head ,pm/note-name-template ,pm/aliased-note-head-template)
            :unnarrowed t
            :empty-lines-before 1)))
 
@@ -1197,8 +1204,13 @@ The default capture template for all notes should consist of at least the follow
   (interactive)
   (org-roam-capture nil "d"))
 
+(defun pm/note-alias ()
+  (interactive)
+  (org-roam-capture nil "a"))
+
 (pm/leader
-  "nn" '(pm/note-default :which-key "Create note"))
+  "nn" '(pm/note-default :which-key "Create note")
+  "na" '(pm/note-alias :which-key "Create aliased note"))
 #+end_src
 
 **** Dailies
