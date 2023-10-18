@@ -1320,6 +1320,40 @@ Add shortcuts so capturing can be done immediately on key press
 **** Projects
 
 #+begin_src emacs-lisp
+(defvar pm/project-note-name-template "%/projects/<%s>__${slug}.org")
+(defvar pm/project-note-head-template
+  (pm/note-head-template
+   :prompt-for-tags t
+   :refs '("^{PROJECT_URL}")
+   :headings '("Project Description" "Journal" "Tasks" "Ideas" "Links")))
+(setopt org-roam-capture-templates
+        (append org-roam-capture-templates
+                `(("p" "projects")
+                  ("pd" "default project" plain
+                   "%?"
+                   :target (file+head+olp ,pm/project-note-name-template ,pm/project-note-head-template ("Project Description"))
+                   :unnarrowed t)
+                  ("pj" "journal" entry
+                   "** %<%T>\n %?"
+                   :target (file+head+olp ,pm/project-note-name-template ,pm/project-note-head-template ("Journal"))
+                   :prepend t
+                   :unnarrowed t)
+                  ("pt" "task" entry
+                   "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+                   :target (file+head+olp ,pm/project-note-name-template ,pm/project-note-head-template ("Tasks"))
+                   :prepend t
+                   :unnarrowed t)
+                  ("pi" "idea" entry
+                   "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+                   :target (file+head+olp ,pm/project-note-name-template ,pm/project-note-head-template ("Ideas"))
+                   :prepend t
+                   :unnarrowed t)
+                  ("pl" "link" entry
+                   "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+                   :target (file+head+olp ,pm/project-note-name-template ,pm/project-note-head-template ("Links"))
+                   :unnarrowed t
+                   :prepend t
+                   :immediate-finish t))))
 #+end_src
 
 **** Links
