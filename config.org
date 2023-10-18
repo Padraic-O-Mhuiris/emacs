@@ -1209,13 +1209,6 @@ Set the default directory under ~org-directory~
 (setq org-roam-dailies-directory "daily/")
 #+end_src
 
-For adding tasks to the daily file we create a wrapped function which works cleaner
-
-#+begin_src emacs-lisp
-(defun pm/daily-note-insert-todo ()
-  "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n")
-#+end_src
-
 Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 
 #+begin_src emacs-lisp
