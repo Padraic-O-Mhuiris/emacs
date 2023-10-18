@@ -1215,14 +1215,14 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
   (pm/note-head-template
    :alias "%<%Y-%m-%d>"
    :title "%(pm/formatted-date-string)"
-   :content "* Journal\n\n* Tasks\n\n* Ideas\n\n* Links\n"))
+   :content "\n* Journal\n\n* Tasks\n\n* Ideas\n\n* Links\n"))
 (setopt org-roam-dailies-capture-templates
         `(("d" "default" plain
            "%?"
-           :target (file+head pm/daily-note-name-template pm/daily-note-head-template)
+           :target (file+head ,pm/daily-note-name-template ,pm/daily-note-head-template)
            :unnarrowed t)
-          ("j" "journal" item
-           "- %<%T> :: %?"
+          ("j" "journal" entry
+           "** %<%T>\n %?"
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
            :prepend t
            :unnarrowed t)
