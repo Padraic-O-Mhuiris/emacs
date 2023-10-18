@@ -1264,7 +1264,7 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
            :target (file+head ,pm/daily-note-name-template ,pm/daily-note-head-template)
            :unnarrowed t)
           ("j" "journal" entry
-           "** %<%T>\n %?"
+           "** [%<%T>]\n %?"
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
            :prepend t
            :unnarrowed t)
@@ -1292,30 +1292,71 @@ Add shortcuts so capturing can be done immediately on key press
 (defun pm/daily-note-today-default ()
   (interactive)
   (org-roam-dailies-goto-today "d"))
-
 (defun pm/daily-note-today-journal ()
   (interactive)
   (org-roam-dailies-capture-today nil "j"))
-
 (defun pm/daily-note-today-task ()
   (interactive)
   (org-roam-dailies-capture-today nil "t"))
-
 (defun pm/daily-note-today-idea ()
   (interactive)
   (org-roam-dailies-capture-today nil "i"))
-
 (defun pm/daily-note-today-link ()
   (interactive)
   (org-roam-dailies-capture-today nil "l"))
 
+;; (defun pm/daily-note-tomorrow-default ()
+;;   (interactive)
+;;   (org-roam-dailies-goto-tomorrow 1 "d"))
+;; (defun pm/daily-note-tomorrow-journal ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-tomorrow 1 nil "j"))
+;; (defun pm/daily-note-tomorrow-task ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-tomorrow 1 nil "t"))
+;; (defun pm/daily-note-tomorrow-idea ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-tomorrow 1 nil "i"))
+;; (defun pm/daily-note-tomorrow-link ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-tomorrow 1 nil "l"))
+
+;; (defun pm/daily-note-yesterday-default ()
+;;   (interactive)
+;;   (org-roam-dailies-goto-yesterday 1 "d"))
+;; (defun pm/daily-note-yesterday-journal ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-yesterday 1 nil "j"))
+;; (defun pm/daily-note-yesterday-task ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-yesterday 1 nil "t"))
+;; (defun pm/daily-note-yesterday-idea ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-yesterday 1 nil "i"))
+;; (defun pm/daily-note-yesterday-link ()
+;;   (interactive)
+;;   (org-roam-dailies-capture-yesterday 1 nil "l"))
+
 (pm/leader
-  "nd" '(:ignore t :which-key "daily notes")
+  "nd" '(:ignore t :which-key "todays' notes")
   "ndd" '(pm/daily-note-today-default :which-key "goto daily note")
   "ndj" '(pm/daily-note-today-journal :which-key "capture journal entry")
   "ndt" '(pm/daily-note-today-task :which-key "capture task")
   "ndi" '(pm/daily-note-today-idea :which-key "capture idea")
   "ndl" '(pm/daily-note-today-link :which-key "capture link"))
+  ;; TODO - Need to make title timestring dynamic
+  ;; "nt" '(:ignore t :which-key "tomorrows' notes")
+  ;; "ntd" '(pm/daily-note-tomorrow-default :which-key "goto daily note")
+  ;; "ntj" '(pm/daily-note-tomorrow-journal :which-key "capture journal entry")
+  ;; "ntt" '(pm/daily-note-tomorrow-task :which-key "capture task")
+  ;; "nti" '(pm/daily-note-tomorrow-idea :which-key "capture idea")
+  ;; "ntl" '(pm/daily-note-tomorrow-link :which-key "capture link")
+  ;; "ny" '(:ignore t :which-key "yesterdays' notes")
+  ;; "nyd" '(pm/daily-note-yesterday-default :which-key "goto daily note")
+  ;; "nyj" '(pm/daily-note-yesterday-journal :which-key "capture journal entry")
+  ;; "nyt" '(pm/daily-note-yesterday-task :which-key "capture task")
+  ;; "nyi" '(pm/daily-note-yesterday-idea :which-key "capture idea")
+  ;; "nyl" '(pm/daily-note-yesterday-link :which-key "capture link"))
 #+end_src
 **** Projects
 
