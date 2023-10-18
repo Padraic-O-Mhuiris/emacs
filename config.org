@@ -1179,7 +1179,7 @@ These are a number of capture templates and associated variables which are used 
               "\n")))))
 #+end_src
 
-**** Default
+**** Generic
 
 The default capture template for all notes should consist of at least the following
 
