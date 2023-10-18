@@ -1186,7 +1186,7 @@ These are a number of capture templates and associated variables which are used 
                          (apply #'concat
                                 `(":PROPERTIES:\n"
                                   ,(if (> (length aliases) 0)
-                                       (concat ":ROAM_ALIASES: " (apply #'concat (pm/intersperse refs " ")) "\n")
+                                       (concat ":ROAM_ALIASES: " (apply #'concat (pm/intersperse aliases " ")) "\n")
                                      "")
                                   ,(if (> (length refs) 0)
                                        (concat ":ROAM_REFS: " (apply #'concat (pm/intersperse refs " ")) "\n")
