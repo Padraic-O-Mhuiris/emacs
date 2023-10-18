@@ -1356,6 +1356,8 @@ Manage projects using projectile
 (require 'projectile)
 (projectile-mode +1)
 
+(add-to-list 'projectile-globally-ignored-directories "/nix/*")
+
 (setq projectile-project-search-path
       '(
         "~/.config/emacs"
