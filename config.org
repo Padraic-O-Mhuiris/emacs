@@ -1215,6 +1215,7 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
          "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
          :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Links"))
          :unnarrowed t
+         :prepend t
          :immediate-finish t)))
 #+end_src
 
