@@ -1167,13 +1167,13 @@ Set the default directory under ~org-directory~
 Initialise the default daily filename template
 
 #+begin_src emacs-lisp
-(defvar pm/org-roam-daily-name-template "%<%Y-%m-%d>.org")
+(defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
 #+end_src
 
 Initialise the default heading string which is to be used by all daily capture templates
 
 #+begin_src emacs-lisp
-(defvar pm/org-roam-daily-head-template
+(defvar pm/daily-note-head-template
   (concat
    (pm/note-heading-alias "%<%Y-%m-%d>")
    (pm/note-heading-title "%(pm/formatted-date-string)")
@@ -1184,7 +1184,7 @@ Initialise the default heading string which is to be used by all daily capture t
 For adding tasks to the daily file we create a wrapped function which works cleaner
 
 #+begin_src emacs-lisp
-(defun pm/org-roam-daily-insert-todo ()
+(defun pm/daily-note-insert-todo ()
   "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n")
 #+end_src
 
@@ -1194,26 +1194,26 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 (setq org-roam-dailies-capture-templates
       `(("d" "default" plain
          "%?"
-         :target (file+head ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template)
+         :target (file+head ,pm/daily-note-name-template ,pm/daily-note-head-template)
          :unnarrowed t)
         ("j" "journal" item
          "- %<%T> :: %?"
-         :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Journal"))
+         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
          :prepend t
          :unnarrowed t)
         ("t" "task" entry
          "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Tasks"))
+         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Tasks"))
          :prepend t
          :unnarrowed t)
         ("i" "idea" entry
          "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Ideas"))
+         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Ideas"))
          :prepend t
          :unnarrowed t)
         ("l" "link" entry
          "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
-         :target (file+head+olp ,pm/org-roam-daily-name-template ,pm/org-roam-daily-head-template ("Links"))
+         :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Links"))
          :unnarrowed t
          :prepend t
          :immediate-finish t)))
@@ -1222,34 +1222,33 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
 Add shortcuts so capturing can be done immediately on key press
 
 #+begin_src emacs-lisp
-(defun pm/org-roam-dailies-today-default ()
+(defun pm/daily-note-today-default ()
   (interactive)
   (org-roam-dailies-goto-today "d"))
 
-(defun pm/org-roam-dailies-today-journal ()
+(defun pm/daily-note-today-journal ()
   (interactive)
   (org-roam-dailies-capture-today nil "j"))
 
-(defun pm/org-roam-dailies-today-task ()
+(defun pm/daily-note-today-task ()
   (interactive)
   (org-roam-dailies-capture-today nil "t"))
 
-(defun pm/org-roam-dailies-today-idea ()
+(defun pm/daily-note-today-idea ()
   (interactive)
   (org-roam-dailies-capture-today nil "i"))
 
-(defun pm/org-roam-dailies-today-link ()
+(defun pm/daily-note-today-link ()
   (interactive)
   (org-roam-dailies-capture-today nil "l"))
 
 (pm/leader
   "nd" '(:ignore t :which-key "daily notes")
-  ;; "ndd" '(org-roam-dailies-goto-today :which-key "goto daily note")
-  "ndd" '(pm/org-roam-dailies-today-default :which-key "goto daily note")
-  "ndj" '(pm/org-roam-dailies-today-journal :which-key "capture journal entry")
-  "ndt" '(pm/org-roam-dailies-today-task :which-key "capture task")
-  "ndi" '(pm/org-roam-dailies-today-idea :which-key "capture idea")
-  "ndl" '(pm/org-roam-dailies-today-link :which-key "capture link"))
+  "ndd" '(pm/daily-note-today-default :which-key "goto daily note")
+  "ndj" '(pm/daily-note-today-journal :which-key "capture journal entry")
+  "ndt" '(pm/daily-note-today-task :which-key "capture task")
+  "ndi" '(pm/daily-note-today-idea :which-key "capture idea")
+  "ndl" '(pm/daily-note-today-link :which-key "capture link"))
 #+end_src
 **** Projects
 
