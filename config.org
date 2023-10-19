@@ -758,6 +758,7 @@ Naked urls are fine but it is preferred to use ~org-cliplink~ as a way to gather
              '("mrm" . "src mermaid :file /tmp/test.png"))
 #+end_src
 
+**** TODO Add inline images for  working!!
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading
