@@ -86,7 +86,7 @@
               ({ pkgs, ... }: {
                 wrappers.emacs = {
                   basePackage = emacs;
-                  env.MERMAID_CLI.value = inputs.nixpkgs.lib.getExe pkgs.nodePackages_latest.mermaid_cli;
+                  # env.MERMAID_CLI.value = inputs.nixpkgs.lib.getExe pkgs.nodePackages_latest.mermaid_cli;
                   pathAdd = with pkgs; [
                     sqlite
                     (ripgrep.override { withPCRE2 = true; })
