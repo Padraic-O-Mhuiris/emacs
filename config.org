@@ -765,6 +765,7 @@ Extending this behaviour we can add more states which offer a generic way of tra
          "|" ;;
          "DONE(d!)" ;; When a task is completed
          "KILL(k@/!)" ;; When a task is rejected
+         "FAIL(f@/!)" ;; When a task is failed
          )
         (sequence
          "NOTE" ;; Not necessary for agenda, just for highlighting in places
