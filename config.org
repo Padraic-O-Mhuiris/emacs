@@ -1246,17 +1246,31 @@ The default capture template for all notes should consist of at least the follow
 (defvar pm/note-name-template "%<%s>__${slug}.org")
 (defvar pm/note-head-template (pm/note-head-template :prompt-for-tags t))
 (defvar pm/aliased-note-head-template (pm/note-head-template :aliases '("%^{ALIAS}") :prompt-for-tags t))
+(defvar pm/empty-note-head-template (pm/note-head-template))
+
+(defvar pm/default-note-capture-template
+  `("d" "default" plain
+     "%?"
+     :target (file+head ,pm/note-name-template ,pm/note-head-template)
+     :unnarrowed t
+     :empty-lines-before 1))
+(defvar pm/aliased-note-capture-template
+  `("a" "aliased" plain
+     "%?"
+     :target (file+head ,pm/note-name-template ,pm/aliased-note-head-template)
+     :unnarrowed t
+     :empty-lines-before 1))
+(defvar pm/empty-note-capture-template
+  `("e" "empty" entry
+     ,(pm/note-todo-entry :levels "*" :todo "NOTE" :entry "Write note for \"${title}\"")
+     :target (file+head ,pm/note-name-template ,pm/empty-note-head-template)
+     :immediate-finish t
+     :empty-lines-before 1))
+
 (setopt org-roam-capture-templates
-        `(("d" "default" plain
-           "%?"
-           :target (file+head ,pm/note-name-template ,pm/note-head-template)
-           :unnarrowed t
-           :empty-lines-before 1)
-          ("a" "aliased" plain
-           "%?"
-           :target (file+head ,pm/note-name-template ,pm/aliased-note-head-template)
-           :unnarrowed t
-           :empty-lines-before 1)))
+        `(,pm/default-note-capture-template
+          ,pm/aliased-note-capture-template
+          ,pm/empty-note-capture-template))
 
 (defun pm/note-default ()
   (interactive)
@@ -1294,22 +1308,22 @@ Assign the ~org-roam-dailies-capture-templates~ with relevant keybinds.
            :target (file+head ,pm/daily-note-name-template ,pm/daily-note-head-template)
            :unnarrowed t)
           ("j" "journal" entry
-           "** [%<%T>]\n %?"
+           ,pm/note-journal-entry
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Journal"))
            :prepend t
            :unnarrowed t)
           ("t" "task" entry
-           "** TODO %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           ,(pm/note-todo-entry)
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Tasks"))
            :prepend t
            :unnarrowed t)
           ("i" "idea" entry
-           "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           ,pm/note-idea-entry
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Ideas"))
            :prepend t
            :unnarrowed t)
           ("l" "link" entry
-           "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n"
+           ,pm/note-link-entry
            :target (file+head+olp ,pm/daily-note-name-template ,pm/daily-note-head-template ("Links"))
            :unnarrowed t
            :prepend t
