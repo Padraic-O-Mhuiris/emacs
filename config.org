@@ -280,6 +280,18 @@ Should a file be modified outside of Emacs, always respect those changes. Also c
 #+begin_src emacs-lisp
 (setq sentence-end-double-space nil)
 #+end_src
+*** Don't save modified buffers on exit
+
+If a buffer is "unsaved" when killing it, you will get an annoying prompt to save. If not saved, I want to just kill immediately
+
+#+begin_src emacs-lisp
+(defun pm/suppress-save-buffer-query-function ()
+  (set-buffer-modified-p nil)
+  t) ; Return t so other functions in kill-buffer-query-functions get called.
+
+(add-to-list 'kill-buffer-query-functions 'pm/suppress-save-buffer-query-function)
+#+end_src
+
 ** UI
 
 *** Remove Features
