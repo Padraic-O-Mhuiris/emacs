@@ -1007,7 +1007,7 @@ The general structure I wish to have is as follows:
 (setopt org-directory "~/notes")
 #+end_src
 
-*** Initialise ~org-roam~
+*** ~org-roam~
 
 Load the package
 
