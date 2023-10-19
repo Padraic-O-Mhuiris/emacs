@@ -1224,6 +1224,18 @@ If DAY-OFFSET is -1, return yesterday's date."
                  ,(when file-tags file-tags)
                  ,(when olp (concat "\n" olp))))
               "\n")))))
+
+(defun pm/note-todo-entry (&rest args)
+  (let ((entry (or (plist-get args :entry) "%?"))
+        (levels (or (plist-get args :levels) "**"))
+        (todo (or (plist-get args :todo) "TODO")))
+    (concat levels " " todo " " entry "\n:PROPERTIES:\n:CREATED:  %U\n:END:\n")))
+(defvar pm/note-journal-entry
+  "** [%<%T>]\n %?")
+(defvar pm/note-idea-entry
+  "** IDEA %?\n:PROPERTIES:\n:CREATED:  %U\n:END:\n")
+(defvar pm/note-link-entry
+  "** LINK %(org-cliplink-capture)\n:PROPERTIES:\n:CREATED:  %U\n:END:\n")
 #+end_src
 
 **** Generic
@@ -1692,7 +1704,6 @@ Nix is a nice language
 #+end_src
 ** Elisp
 * Utilities/Tools
-
 ** Profiling
 
 ~esup~, https://github.com/jschaf/esup is a tool used for profiling emacs startup time.
