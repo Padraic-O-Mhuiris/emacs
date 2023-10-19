@@ -748,6 +748,16 @@ Naked urls are fine but it is preferred to use ~org-cliplink~ as a way to gather
 (require 'org-cliplink)
 #+end_src
 
+*** Graphs
+
+#+begin_src emacs-lisp
+(setq ob-mermaid-cli-path (getenv "MERMAID_CLI"))
+(add-to-list 'org-babel-load-languages '(mermaid . t))
+
+(add-to-list 'org-structure-template-alist
+             '("mrm" . "src mermaid :file /tmp/test.png"))
+#+end_src
+
 *** Miscellaneous
 
 Prevents edits to content hidden under a folded heading

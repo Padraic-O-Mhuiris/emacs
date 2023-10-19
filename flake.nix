@@ -86,6 +86,7 @@
               ({ pkgs, ... }: {
                 wrappers.emacs = {
                   basePackage = emacs;
+                  env.MERMAID_CLI.value = lib.getExe nodePackages_latest.mermaid_cli;
                   pathAdd = with pkgs; [
                     sqlite
                     (ripgrep.override { withPCRE2 = true; })
@@ -102,6 +103,7 @@
                     nodePackages_latest.stylelint
                     nodePackages_latest.js-beautify
                     nixfmt
+                    nodePackages_latest.mermaid-cli
                   ];
                 };
               })
