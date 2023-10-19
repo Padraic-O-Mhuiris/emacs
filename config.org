@@ -1442,6 +1442,23 @@ Add shortcuts so capturing can be done immediately on key press
 #+end_src
 
 **** Links
+
+**** Functions
+
+Below are useful helpers which can be used to provide quick access
+
+#+begin_src emacs-lisp
+(defun pm/note-empty-insert-immediate (arg &rest args)
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates `(,(append pm/empty-note-capture-template (list :kill-buffer t)))))
+    (apply #'org-roam-node-insert args)))
+
+(general-define-key
+ "C-c n i" 'pm/note-empty-insert-immediate)
+#+end_src
+
+something1
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
