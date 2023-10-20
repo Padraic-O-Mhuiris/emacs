@@ -867,7 +867,454 @@ The ~ORDERED~ property restricts sequential TODO's under a heading to be assigne
 #+end_src
 
 ** Notes
-*** 
+*** Initialisation
+
+#+begin_src emacs-lisp
+(require 'org-roam)
+(setopt org-directory "~/notes"
+        org-roam-directory org-directory
+        org-roam-dailies-directory "daily/")
+(setq org-roam-database-connector 'sqlite-builtin)
+(org-roam-db-autosync-mode)
+
+
+(pm/leader
+  "n" '(:ignore t :which-key "notes"))
+#+end_src
+*** Display
+
+#+begin_src emacs-lisp
+(defun pm/rpartial (fn &rest args)
+  "Return a partial application of FUN to right-hand ARGS.
+
+ARGS is a list of the last N arguments to pass to FUN. The result is a new
+function which does the same as FUN, except that the last N arguments are fixed
+at the values with which this function was called."
+  (declare (side-effect-free t))
+  (lambda (&rest pre-args)
+    (apply fn (append pre-args args))))
+
+(cl-defmethod org-roam-node-pm/filetitle ((node org-roam-node))
+  "Return the value of \"#+title:\" (if any) from file that NODE resides in.
+If there's no file-level title in the file, return empty string."
+  (or (if (= (org-roam-node-level node) 0)
+          (org-roam-node-title node)
+        (org-roam-node-file-title node))
+      ""))
+
+(cl-defmethod org-roam-node-pm/hierarchy ((node org-roam-node))
+  "Return hierarchy for NODE, constructed of its file title, OLP and direct title.
+If some elements are missing, they will be stripped out."
+  (let ((title     (org-roam-node-title node))
+        (olp       (org-roam-node-olp   node))
+        (level     (org-roam-node-level node))
+        (filetitle (org-roam-node-pm/filetitle node))
+        (separator (propertize "<>" 'face 'shadow)))
+    (cl-case level
+      ;; node is a top-level file
+      (0 filetitle)
+      ;; node is a level 1 heading
+      (1 (concat (propertize filetitle 'face '(shadow italic))
+                 separator title))
+      ;; node is a heading with an arbitrary outline path
+      (t (concat (propertize filetitle 'face '(shadow italic))
+                 separator (propertize (string-join olp separator) 'face '(shadow italic))
+                 separator title)))))
+
+(cl-defmethod org-roam-node-pm/type ((node org-roam-node))
+  "Return the directory relative to `org-roam-directory' as a note's \"type\"."
+  (when-let (dir (thread-first
+                   node
+                   (org-roam-node-file)
+                   (file-relative-name org-roam-directory)
+                   (file-name-directory)))
+    (directory-file-name dir)))
+
+(cl-defmethod org-roam-node-pm/tags ((node org-roam-node))
+  "Return tags formatted in the same way how they appear in org files."
+  (cl-remove-if (pm/rpartial
+                 #'member (delq
+                           nil (append
+                                (list (bound-and-true-p org-archive-tag)
+                                      (bound-and-true-p org-attach-auto-tag))
+                                (bound-and-true-p org-num-skip-tags))))
+                (org-roam-node-tags node)))
+
+(setq org-roam-node-display-template
+      (format "${pm/hierarchy:*} %s %s"
+              (propertize "${pm/type}" 'face 'font-lock-keyword-face)
+              (propertize "${pm/tags:*}" 'face '(:inherit org-tag :box nil))))
+
+(add-to-list 'org-roam-node-template-prefixes '("pm/tags" . "#"))
+(add-to-list 'org-roam-node-template-prefixes '("pm/type" . "@"))
+#+end_src
+*** Templates
+**** Entries
+
+***** Basic Entry
+
+#+begin_src emacs-lisp
+(defvar pm/note-basic-entry (pm/template-entry-builder :entry-content "%?" :no-properties t))
+#+end_src
+***** Todo Entry
+
+
+#+begin_src emacs-lisp
+(defvar pm/note-todo-entry (pm/template-entry-builder :todo-state "TODO" :levels 2 :title-content "%?"))
+#+end_src
+
+***** Journal Entry
+
+#+begin_src emacs-lisp
+(defvar pm/note-journal-entry (pm/template-entry-builder :title-content "[%<%T>]\n %?" :levels 2 :no-properties t))
+#+end_src
+
+***** Idea Entry
+
+#+begin_src emacs-lisp
+(defvar pm/note-idea-entry (pm/template-entry-builder :todo-state "IDEA" :levels 2 :title-content "%?"))
+#+end_src
+
+***** Link Entry (From Clipboard)
+
+#+begin_src emacs-lisp
+(defvar pm/note-link-entry (pm/template-entry-builder
+                            :todo-state "LINK"
+                            :levels 2
+                            :title-content "%(org-cliplink-capture)"
+                            :tags '("link")))
+#+end_src
+**** Names
+
+***** Default
+
+#+begin_src emacs-lisp
+(defvar pm/default-note-name-template "%<%s>__${slug}.org")
+#+end_src
+
+***** Project
+
+#+begin_src emacs-lisp
+(defvar pm/project-note-name-template "/project/${slug}.org")
+#+end_src
+
+***** Daily
+
+#+begin_src emacs-lisp
+(defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
+#+end_src
+
+***** Person
+
+#+begin_src emacs-lisp
+(defvar pm/people-note-name-template "/people/<%s>__${slug}.org")
+#+end_src
+***** Link
+
+#+begin_src emacs-lisp
+(defvar pm/link-note-name-template "%<%s>__${url}__${slug}.org")
+#+end_src
+
+**** Targets
+
+***** Basic
+
+#+begin_src emacs-lisp
+(defvar pm/basic-note-target `(file+head ,pm/default-note-name-template ,(pm/template-head-builder)))
+#+end_src
+
+***** Action
+
+#+begin_src emacs-lisp
+(defvar pm/action-note-target
+  `(file+head
+    ,pm/default-note-name-template
+    ,(pm/template-head-builder
+      :headings '("Journal" "Tasks" "Ideas" "Links")
+      )))
+#+end_src
+**** Generic
+***** Basic Note Template
+#+begin_src emacs-lisp
+(defvar pm/basic-note-template
+  `("d" "" plain
+    pm/note-basic-entry
+    :target ,pm/basic-note-target
+    :unnarrowed t
+    :empty-lines-before 1))
+#+end_src
+*** Finding
+**** Prompt
+
+#+begin_src emacs-lisp
+(defvar pm/note-find-prompt "<[Note]> ")
+#+end_src
+**** Leader key
+
+#+begin_src emacs-lisp
+(pm/leader
+  "nf" '(:ignore t :which-key "find notes"))
+#+end_src
+
+**** Find matching note
+
+Default org-roam has awkward fallback process when finding notes. If a note does not exist, it will immediately go into a capture process which is not exactly desired
+
+#+begin_src emacs-lisp
+(cl-defun pm/note-read (&key (initial-input nil)
+                             (filter-fn nil)
+                             (sort-fn nil)
+                             (require-match nil)
+                             (prompt pm/note-find-prompt))
+  (org-roam-node-read initial-input filter-fn sort-fn require-match prompt))
+
+(cl-defun pm/note-find ()
+  (interactive)
+  (org-roam-node-visit (pm/note-read :require-match t) t))
+
+(pm/leader
+  "nf" '(pm/note-find :which-key "find note"))
+#+end_src
+
+**** TODO Find note by tag(s)
+**** TODO Find project notes
+**** TODO Find people notes
+**** TODO Find link notes
+**** TODO Find daily notes
+*** TODO Searching
+*** Capturing
+
+Capturing is the central component to how the note system should work. Ideally, the flow should work as a way to automate editing or creation. 
+
+#+begin_src emacs-lisp
+(defun pm/return-t (orig-fun &rest args) t)
+(defun pm/disable-yornp (orig-fun &rest args)
+  (advice-add 'yes-or-no-p :around #'pm/return-t)
+  (advice-add 'y-or-n-p :around #'pm/return-t)
+  (let ((res (apply orig-fun args)))
+    (advice-remove 'yes-or-no-p #'pm/return-t)
+    (advice-remove 'y-or-n-p #'pm/return-t)
+    res))
+(advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
+
+(cl-defun pm/note-capture-new (&key node)
+  (interactive)
+  (if node
+      (org-roam-capture-
+       :goto nil
+       :info nil
+       :keys nil
+       :templates `(("a" "Basic note default" plain
+                     ,pm/note-basic-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder)))
+                    ("b" "Basic note + alias prompt" plain
+                     ,pm/note-basic-entry
+                     :target (file+head
+                              ,pm/default-note-name-template
+                              ,(pm/template-head-builder :aliases `("^{ALIAS}"))))
+                    ("c" "Basic note + tag prompt" plain
+                     ,pm/note-basic-entry
+                     :target (file+head
+                              ,pm/default-note-name-template
+                              ,(pm/template-head-builder :prompt-for-tags t)))
+                    ("d" "Basic note + tag prompt + alias prompt" plain
+                     ,pm/note-basic-entry
+                     :target (file+head
+                              ,pm/default-note-name-template
+                              ,(pm/template-head-builder :prompt-for-tags t)))
+                     ("e" "Basic note + tag prompt + alias prompt" plain
+                     ,pm/note-basic-entry
+                     :target (file+head
+                              ,pm/default-note-name-template
+                              ,(pm/template-head-builder :prompt-for-tags t)))
+                    )
+       :node node
+       :props '(:unnarrowed t :empty-lines-before 1))
+    (user-error "Node cannot be nil!")))
+
+(defvar pm/note-capture-existing-edit
+  `("e" "Edit this file ${title}" plain
+    ,pm/note-basic-entry
+    :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))))
+
+(defvar pm/note-capture-existing-todo
+  `("t" "todo entry" entry
+    ,pm/note-todo-entry
+    :target (file+head+olp
+             ,pm/default-note-name-template
+             ,(pm/template-head-builder :headings `("Tasks"))
+             ("Tasks"))))
+
+(cl-defun pm/note-capture-existing (&key node)
+  (interactive)
+  (if node
+      (org-roam-capture-
+       :goto nil
+       :info nil
+       :keys nil
+       :templates `(,pm/note-capture-existing-edit
+                    ,pm/note-capture-existing-todo)
+       :node node
+       :props '(:unnarrowed t :empty-lines-before 1)) ;; 
+    (user-error "Node cannot be nil!")))
+
+(cl-defun pm/note-capture ()
+  (interactive)
+  (let ((node (pm/note-read)))
+    (if (org-roam-node-file node)
+        (pm/note-capture-existing :node node)
+      (pm/note-capture-new :node node))))
+
+
+(pm/leader
+  "nc" '(pm/note-capture :which-key "capture note"))
+#+end_src
+
+
+*** Keybinds
+**** Generic
+#+begin_src emacs-lisp
+;; (cl-defun pm/note-capture ()
+;;   (interactive)
+;;   (let ((node (org-roam-node-create :title "SOME")))
+;;     (org-roam-capture-
+;;      :goto t
+;;      :info "MY INFO"
+;;      :keys nil
+;;      :templates `(("d" "" plain
+;;                     ,pm/note-basic-entry
+;;                     :target ,pm/basic-note-target
+;;                     :unnarrowed t
+;;                     :empty-lines-before 1))
+;;      :node node;; (org-roam-node-read nil nil) ;; always captures new note?
+;;      :props '() ;; properties to be passed along
+;;      )))
+
+;; (cl-defun pm/note-capture-with-title (&key)
+;;   (interactive)
+;;   (let ((node (org-roam-node-create :title "MY BULLSHIT")))
+;;     (org-roam-capture-
+;;      :goto t
+;;      :info "MY INFO"
+;;      :keys nil
+;;      :templates `(("d" "" plain
+;;                     ,pm/note-basic-entry
+;;                     :target ,pm/basic-note-target
+;;                     :unnarrowed t
+;;                     :empty-lines-before 1))
+;;      :node node;; (org-roam-node-read nil nil) ;; always captures new note?
+;;      :props '() ;; properties to be passed along
+;;      )))
+
+#+end_src
+
+*** Functions
+
+**** intersperse
+
+#+begin_src emacs-lisp :tangle ./functions.el
+(defun pm/intersperse (lst value)
+  "Intersperse LST with VALUE."
+  (if (null lst)
+      '()
+    (let ((rest-of-list (cdr lst)))
+      (if (null rest-of-list)
+          lst
+        (cons (car lst) (cons value (pm/intersperse rest-of-list value)))))))
+
+#+end_src
+**** list-to-org
+
+#+begin_src emacs-lisp :tangle ./functions.el
+(defun pm/list-to-org (lst &optional level)
+  (unless level (setq level 1))
+  (mapconcat (lambda (item)
+               (if (listp item)
+                   (pm/list-to-org item (1+ level))
+                 (concat (make-string level ?*) " " item "\n\n")))
+             lst
+             ""))
+#+end_src
+**** list2str
+#+begin_src emacs-lisp :tangle ./functions.el
+(cl-defun pm/list2str (lst &key (between "") (before "") (after ""))
+  (apply #'concat `(,before ,(apply #'concat (pm/intersperse (cl-remove-if-not 'stringp lst) between)) ,after)))
+#+end_src
+**** template-head-builder
+
+#+begin_src emacs-lisp :tangle ./functions.el
+(cl-defun pm/template-head-builder (&key (title "${title}")
+                                         (tags `())
+                                         (aliases `())
+                                         (refs `())
+                                         (headings `())
+                                         (prompt-for-tags nil)
+                                         (created "#+created_at: %U")
+                                         (modified  "#+last_modified: %U"))
+  "This function is the default builder for all note templates. It expects a series of keys and values in each case:
+"
+  (let
+      ((file-tags (if (or
+                       (> (length tags) 0)
+                       prompt-for-tags)
+                      (pm/list2str tags
+                                   :before (concat "#+filetags: "
+                                                   (if (> (length tags) 0) ":" ""))
+                                   :after (concat (if (> (length tags) 0) ":" "")
+                                                  (if prompt-for-tags "%^G" ""))
+                                   :between ":")
+                    nil))
+       (properties (if (or
+                        (> (length refs) 0)
+                        (> (length aliases) 0))
+                       (pm/list2str
+                        `(,(when (> (length aliases) 0)
+                             (pm/list2str aliases :between " " :before ":ROAM_ALIASES: " :after "\n"))
+                          ,(when (> (length refs) 0)
+                             (pm/list2str refs :between " " :before ":ROAM_REFS: " :after "\n")))
+                        :before ":PROPERTIES:\n"
+                        :after ":END:"
+                        :between "\n")
+                     nil))
+       (olp (if (> (length headings) 0)
+                (pm/list-to-org headings)
+              nil)))
+    (pm/list2str `(,properties
+                   ,(concat "#+title: " title)
+                   ,created
+                   ,modified
+                   ,file-tags
+                   ,olp
+                   "\n"
+                   )
+                 :between "\n")))
+#+end_src
+**** template-entry-builder
+
+#+begin_src emacs-lisp :tangle ./functions.el
+(cl-defun pm/template-entry-builder (&key (todo-state nil)
+                                          (title-content nil)
+                                          (entry-content nil)
+                                          (levels 0)
+                                          (tags `())
+                                          (no-properties nil))
+  (message todo-state)
+  (let
+      ((tag-str (if (> (length tags) 0)
+                    (pm/list2str tags :between ":" :before " :" :after ":")
+                  nil))
+       (levels-str (if (> levels 0)
+                       (make-string levels ?*)
+                     nil)))
+    (pm/list2str `(,(when (> levels 0) (pm/list2str `(,levels-str
+                                                      ,todo-state
+                                                      ,title-content
+                                                      ,tag-str)
+                                                    :between " "))
+                   ,(unless no-properties ":PROPERTIES:\n:CREATED:  %U\n:END:")
+                   ,(when entry-content entry-content))
+                 :between "\n")))
+#+end_src
 
 ** Notes_TO_DELETE
 *** Structure
@@ -1950,7 +2397,6 @@ All functions here should be tangled into their own file, ~functions.el~ which c
                     (time-subtract after-init-time before-init-time)))
            gcs-done))
 #+end_src
-
 * Finalizations
 
 Here is configuration which should end up at the end of the tangled file
