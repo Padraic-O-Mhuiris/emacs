@@ -11,6 +11,10 @@ https://github.com/alphapapa/unpackaged.el#org-return-dwim
 *** TODO Elisp linting and formatting
 *** TODO org-mode code blocks indenting
 *** TODO Add olivetti mode
+*** TODO Set ~SPC u~ as the universal modifier
+:PROPERTIES:
+:CREATED:  [2023-10-21 Sat 19:19]
+:END:
 ** IDEAs
 *** IDEA Autoload all projects with .git
 The idea is that all .git projects found under ~~/code~ or some other listed directory paths should be automatically listed. When searching through projects, the most recent edited or committed to should be listed first in that order
