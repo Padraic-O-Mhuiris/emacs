@@ -1101,9 +1101,13 @@ Default org-roam has awkward fallback process when finding notes. If a note does
 *** TODO Searching
 *** Capturing
 
-Capturing is the central component to how the note system should work. Ideally, the flow should work as a way to automate editing or creation. 
+Capturing is the central component to how the note system should work. Ideally, the flow should work as a way to automate editing or creation of notes in a simple form. 
 
+**** Generic
 
+***** Capturing New Notes
+
+#+begin_src emacs-lisp
 (cl-defun pm/note-capture-new (&key node)
   (interactive)
   (if node
@@ -1132,7 +1136,11 @@ Capturing is the central component to how the note system should work. Ideally, 
        :node node
        :props '(:unnarrowed t :empty-lines-before 1))
     (user-error "Node cannot be nil!")))
+#+end_src
 
+***** Capturing Existing Notes
+
+#+begin_src emacs-lisp
 (cl-defun pm/note-capture-existing (&key node)
   (interactive)
   (if node
@@ -1173,6 +1181,11 @@ Capturing is the central component to how the note system should work. Ideally, 
        :props '(:unnarrowed t)) ;; 
     (user-error "Node cannot be nil!")))
 
+#+end_src
+
+***** ~pm/note-capture~
+
+#+begin_src emacs-lisp
 (cl-defun pm/note-capture ()
   (interactive)
   (let ((node (pm/note-read)))
@@ -1180,11 +1193,21 @@ Capturing is the central component to how the note system should work. Ideally, 
         (pm/note-capture-existing :node node)
       (pm/note-capture-new :node node))))
 
-
 (pm/leader
   "nc" '(pm/note-capture :which-key "capture note"))
 #+end_src
 
+**** Daily
+
+#+begin_src emacs-lisp
+(defun my-org-capture-example (&optional arg)
+  (interactive "P")
+  (cond
+   ((equal arg '(4)) (message "You pressed C-u once"))
+   ((equal arg '(16)) (message "You pressed C-u twice"))
+   (t (message "You did not press C-u or pressed it more than twice"))))
+#+end_src
+**** Projects
 *** Keybinds
 **** Generic
 #+begin_src emacs-lisp
