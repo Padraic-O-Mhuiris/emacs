@@ -885,6 +885,19 @@ The ~ORDERED~ property restricts sequential TODO's under a heading to be assigne
 (pm/leader
   "n" '(:ignore t :which-key "notes"))
 #+end_src
+
+#+begin_src emacs-lisp
+(defun pm/return-t (orig-fun &rest args) t)
+(defun pm/disable-yornp (orig-fun &rest args)
+  (advice-add 'yes-or-no-p :around #'pm/return-t)
+  (advice-add 'y-or-n-p :around #'pm/return-t)
+  (let ((res (apply orig-fun args)))
+    (advice-remove 'yes-or-no-p #'pm/return-t)
+    (advice-remove 'y-or-n-p #'pm/return-t)
+    res))
+(advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
+
+#+end_src
 *** Display
 
 #+begin_src emacs-lisp
@@ -1090,16 +1103,6 @@ Default org-roam has awkward fallback process when finding notes. If a note does
 
 Capturing is the central component to how the note system should work. Ideally, the flow should work as a way to automate editing or creation. 
 
-#+begin_src emacs-lisp
-(defun pm/return-t (orig-fun &rest args) t)
-(defun pm/disable-yornp (orig-fun &rest args)
-  (advice-add 'yes-or-no-p :around #'pm/return-t)
-  (advice-add 'y-or-n-p :around #'pm/return-t)
-  (let ((res (apply orig-fun args)))
-    (advice-remove 'yes-or-no-p #'pm/return-t)
-    (advice-remove 'y-or-n-p #'pm/return-t)
-    res))
-(advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
 
 (cl-defun pm/note-capture-new (&key node)
   (interactive)
