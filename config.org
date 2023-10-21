@@ -1104,14 +1104,14 @@ Capturing is the central component to how the note system should work. Ideally, 
        :goto nil
        :info nil
        :keys nil
-       :templates `(("a" "Basic note default" plain
+       :templates `(("a" "Basic note" plain
                      ,pm/note-basic-entry
                      :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder)))
                     ("b" "Basic note + alias prompt" plain
                      ,pm/note-basic-entry
                      :target (file+head
                               ,pm/default-note-name-template
-                              ,(pm/template-head-builder :aliases `("^{ALIAS}"))))
+                              ,(pm/template-head-builder :aliases `("%^{ALIAS}"))))
                     ("c" "Basic note + tag prompt" plain
                      ,pm/note-basic-entry
                      :target (file+head
@@ -1121,29 +1121,10 @@ Capturing is the central component to how the note system should work. Ideally, 
                      ,pm/note-basic-entry
                      :target (file+head
                               ,pm/default-note-name-template
-                              ,(pm/template-head-builder :prompt-for-tags t)))
-                     ("e" "Basic note + tag prompt + alias prompt" plain
-                     ,pm/note-basic-entry
-                     :target (file+head
-                              ,pm/default-note-name-template
-                              ,(pm/template-head-builder :prompt-for-tags t)))
-                    )
+                              ,(pm/template-head-builder :prompt-for-tags t :aliases `("%^{ALIAS}")))))
        :node node
        :props '(:unnarrowed t :empty-lines-before 1))
     (user-error "Node cannot be nil!")))
-
-(defvar pm/note-capture-existing-edit
-  `("e" "Edit this file ${title}" plain
-    ,pm/note-basic-entry
-    :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))))
-
-(defvar pm/note-capture-existing-todo
-  `("t" "todo entry" entry
-    ,pm/note-todo-entry
-    :target (file+head+olp
-             ,pm/default-note-name-template
-             ,(pm/template-head-builder :headings `("Tasks"))
-             ("Tasks"))))
 
 (cl-defun pm/note-capture-existing (&key node)
   (interactive)
@@ -1152,10 +1133,37 @@ Capturing is the central component to how the note system should work. Ideally, 
        :goto nil
        :info nil
        :keys nil
-       :templates `(,pm/note-capture-existing-edit
-                    ,pm/note-capture-existing-todo)
+       :templates `(("a" "Edit note" plain
+                     ,pm/note-basic-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder)))
+                    ("b" "Edit note + goto" plain
+                     ,pm/note-basic-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))
+                     :jump-to-captured t)
+                    ("c" "Insert TODO" entry
+                     ,pm/note-todo-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))
+                     :prepend t
+                     :empty-lines 1)
+                    ("d" "Insert TODO + goto" entry
+                     ,pm/note-todo-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))
+                     :prepend t
+                     :empty-lines 1
+                     :jump-to-captured t)
+                    ("e" "Insert IDEA" entry
+                     ,pm/note-idea-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))
+                     :prepend t
+                     :empty-lines 1)
+                    ("f" "Insert IDEA + goto" entry
+                     ,pm/note-idea-entry
+                     :target (file+head ,pm/default-note-name-template ,(pm/template-head-builder))
+                     :prepend t
+                     :empty-lines 1
+                     :jump-to-captured t))
        :node node
-       :props '(:unnarrowed t :empty-lines-before 1)) ;; 
+       :props '(:unnarrowed t)) ;; 
     (user-error "Node cannot be nil!")))
 
 (cl-defun pm/note-capture ()
@@ -1169,7 +1177,6 @@ Capturing is the central component to how the note system should work. Ideally, 
 (pm/leader
   "nc" '(pm/note-capture :which-key "capture note"))
 #+end_src
-
 
 *** Keybinds
 **** Generic
