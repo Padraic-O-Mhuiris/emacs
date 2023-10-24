@@ -1012,7 +1012,7 @@ If some elements are missing, they will be stripped out."
 ***** Project
 
 #+begin_src emacs-lisp
-(defvar pm/project-note-name-template "/project/${slug}.org")
+(defvar pm/project-note-name-template "project/${slug}.org")
 #+end_src
 
 ***** Daily
@@ -1024,7 +1024,7 @@ If some elements are missing, they will be stripped out."
 ***** Person
 
 #+begin_src emacs-lisp
-(defvar pm/people-note-name-template "/people/<%s>__${slug}.org")
+(defvar pm/people-note-name-template "people/<%s>__${slug}.org")
 #+end_src
 **** Targets
 
@@ -1193,6 +1193,26 @@ Selection between templates is enshrined here:
 
 **** Links
 
+Link notes are the centre of the notetaking system, they intrinsically orientate content from the outside world into my notes. There are a few ideas I want to get across
+
+- The basic link note contains just a url reference using the ~ROAM_REFS~ property list. The title is extracted utilising ~org-cliplink~ to download the url's html content and extract the content from the ~<title>~ tag.
+- As a link note integrates with outside material, functionality can be built on the basis of identifying links by either properties or tags or even automatic generation of links to other notes
+  - E.g For a youtube video or a github repo which would be a common enough entry in my flow, the youtube channel or github organisation could also be created.
+    - A tag for youtube or github may apply for the link note
+    - A url property should also be included
+  - Another actionable idea is including a bookmark tag which can be used to mark link notes which I regularly interact with
+    - Using ~org-ql~ or other custom functionality, it should be possible to create a bookmarking tool using ~rofi~ to search through those links
+    - The same idea can apply to searching through link notes in general
+    - A simple tree like structure could work as it multiple links can exist for a single note
+- However, a link note should not be generally thought of as being 1-of-1 with a url
+  - A good example is ~org-roam~, it has references to its website url, its github repo and it's discourse
+  - Many such cases exist like this, especially in a software context
+  - A generic link capture template should always add a url to ~ROAM_REFS~ which enables easier lookup
+- A note should be transformed iteratively by the issuance of capture templates
+  - The creation of a note ~org-roam~ containing no tags
+  - A link capture of that note to include a ref using the url and a tag link
+  - A github link capture of that note to add another ref and github
+  
 #+begin_src emacs-lisp
 (cl-defun pm/url-from-clipboard (callback)
   (let ((url (org-cliplink-clipboard-content)))
@@ -1285,9 +1305,89 @@ Selection between templates is enshrined here:
   "nl" '(pm/link-capture :which-key "capture link"))
 #+end_src
 
-**** Daily
-
 **** Projects
+
+All projects will have the project tag
+
+#+begin_src emacs-lisp
+(cl-defun pm/project-read () 
+  (pm/note-read
+   :prompt "Select from projects: "
+   :filter-fn (lambda (node)
+                (cl-some (lambda (tag)
+                           (string= tag "project"))
+                         (org-roam-node-tags node)))))
+
+(cl-defun pm/project-capture-existing (node)
+  (org-roam-capture-
+   :goto nil
+   :info nil
+   :keys nil
+   :templates `(("a" "Edit project" plain
+                 ,pm/note-basic-entry
+                 :target (file+head+olp
+                          ,pm/project-note-name-template
+                          ,(pm/template-head-builder
+                            :tags '("project")
+                            :headings '("Abstract" "Tasks" "Ideas"))
+                          ,'("Abstract")))
+                ("b" "Insert project todo" plain
+                 ,pm/note-todo-entry
+                 :target (file+head+olp
+                          ,pm/project-note-name-template
+                          ,(pm/template-head-builder
+                            :tags '("project")
+                            :headings '("Abstract" "Tasks" "Ideas"))
+                          ,'("Tasks")))
+                ("c" "Insert project idea" plain
+                 ,pm/note-idea-entry
+                 :target (file+head+olp
+                          ,pm/project-note-name-template
+                          ,(pm/template-head-builder
+                            :tags '("project")
+                            :headings '("Abstract" "Tasks" "Ideas"))
+                          ,'("Ideas"))))
+   :node node
+   :props '(:unnarrowed t)))
+
+(cl-defun pm/project-capture-new (node)
+  (org-roam-capture-
+   :goto nil
+   :info nil
+   :keys nil
+   :templates `(("a" "Basic project note" plain
+                 ,pm/note-basic-entry
+                 :target (file+head+olp
+                          ,pm/project-note-name-template
+                          ,(pm/template-head-builder
+                            :tags '("project")
+                            :prompt-for-tags t
+                            :headings '("Abstract" "Tasks" "Ideas"))
+                          ,'("Abstract"))))
+   :node node
+   :props '(:unnarrowed t :empty-lines 1)))
+
+(cl-defun pm/project-capture ()
+  (interactive)
+  (if (file-directory-p (concat org-directory "/project"))
+      nil
+    (progn
+      (make-directory (concat org-directory "/project"))))
+  (let ((node (pm/project-read)))
+    (if (org-roam-node-file node)
+        (pm/project-capture-existing node)
+      (pm/project-capture-new node))))
+
+(pm/leader
+  "np" '(pm/project-capture :which-key "capture project"))
+#+end_src
+**** Daily
+**** Entities
+
+People/Groups/Companies
+
+Classification is an individual person or groups of people, possibly with multiple unique identifiers
+
 *** Keybinds
 **** Generic
 #+begin_src emacs-lisp
