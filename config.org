@@ -1399,43 +1399,6 @@ People/Groups/Companies
 
 Classification is an individual person or groups of people, possibly with multiple unique identifiers
 
-*** Keybinds
-**** Generic
-#+begin_src emacs-lisp
-;; (cl-defun pm/note-capture ()
-;;   (interactive)
-;;   (let ((node (org-roam-node-create :title "SOME")))
-;;     (org-roam-capture-
-;;      :goto t
-;;      :info "MY INFO"
-;;      :keys nil
-;;      :templates `(("d" "" plain
-;;                     ,pm/note-basic-entry
-;;                     :target ,pm/basic-note-target
-;;                     :unnarrowed t
-;;                     :empty-lines-before 1))
-;;      :node node;; (org-roam-node-read nil nil) ;; always captures new note?
-;;      :props '() ;; properties to be passed along
-;;      )))
-
-;; (cl-defun pm/note-capture-with-title (&key)
-;;   (interactive)
-;;   (let ((node (org-roam-node-create :title "MY BULLSHIT")))
-;;     (org-roam-capture-
-;;      :goto t
-;;      :info "MY INFO"
-;;      :keys nil
-;;      :templates `(("d" "" plain
-;;                     ,pm/note-basic-entry
-;;                     :target ,pm/basic-note-target
-;;                     :unnarrowed t
-;;                     :empty-lines-before 1))
-;;      :node node;; (org-roam-node-read nil nil) ;; always captures new note?
-;;      :props '() ;; properties to be passed along
-;;      )))
-
-#+end_src
-
 *** Functions
 
 **** intersperse
