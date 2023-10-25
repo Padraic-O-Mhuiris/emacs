@@ -3,8 +3,6 @@
 This is my literate emacs confguration which I intend  to use for all of my computing needs.
 
 * Introduction
-** TODO Explain purpose of this document
-
 ** Package Management
 
 This is where this configuration differs from most others. Emacs has a wide variety of package management solutions, internally like ~package.el~ or externally like ~use-package~ or ~straight.el~. However, the problem persists is that any emacs configuration has implied external dependencies, say nodejs for writing javascript projects.  Where I differ is that I use Nix to manage both of the elisp package dependencies and the external dependencies. This is the general rule but a large exception is where software projects using Nix also maintain their own dependencies using shell hooks. This would also be a good idea to incorporate where a project buffer rationalises whethers the project is /"nixified"/ and if not will attempt to download those dependencies, or at least make the user aware that it is not available.  Not to digress, because the elisp packages are pre-installed, all that has to be done is to ~require~ them in a file and so removes a lot of unneccessary juggling of ~use-package~.
@@ -858,7 +856,6 @@ The ~ORDERED~ property restricts sequential TODO's under a heading to be assigne
         org-roam-dailies-directory "daily/")
 (setq org-roam-database-connector 'sqlite-builtin)
 (org-roam-db-autosync-mode)
-
 
 (pm/leader
   "n" '(:ignore t :which-key "notes"))
