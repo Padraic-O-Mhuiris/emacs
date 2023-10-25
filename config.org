@@ -971,10 +971,8 @@ If some elements are missing, they will be stripped out."
 
 #+begin_src emacs-lisp
 (defvar pm/note-link-entry (pm/template-entry-builder
-                            :todo-state "LINK"
-                            :levels 2
-                            :title-content "%(org-cliplink-capture)"
-                            :tags '("link")))
+                            :no-properties t
+                            :title-content "%(org-cliplink-capture)"))
 #+end_src
 **** Names
 
@@ -1327,45 +1325,58 @@ All projects will have the project tag
                 (cl-some (lambda (tag)
                            (string= tag "project"))
                          (org-roam-node-tags node)))))
+(defvar project-capture-templates
+  `(("a" "Edit project" entry
+     ,pm/note-basic-entry
+     :target (file+head+olp
+              ,pm/project-note-name-template
+              ,(pm/template-head-builder
+                :tags '("project")
+                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+              ,'("Abstract")))
+    ("b" "Insert project todo" entry
+     ,pm/note-todo-entry
+     :target (file+head+olp
+              ,pm/project-note-name-template
+              ,(pm/template-head-builder
+                :tags '("project")
+                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+              ,'("Tasks")))
+    ("c" "Insert project idea" entry
+     ,pm/note-idea-entry
+     :target (file+head+olp
+              ,pm/project-note-name-template
+              ,(pm/template-head-builder
+                :tags '("project")
+                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+              ,'("Ideas")))
+    ("d" "Insert project link" item
+     "%(org-cliplink-capture)"
+     :target (file+head+olp
+              ,pm/project-note-name-template
+              ,(pm/template-head-builder
+                :tags '("project")
+                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+              ,'("Links")))
+    ("e" "Insert project journal" plain
+     ,(pm/template-entry-builder :title-content (concat "[ " (pm/current-time) " ]")
+                                 :entry-content "%?"
+                                 :no-properties t
+                                 :levels 3)
+     :target (file+head+olp
+              ,pm/project-note-name-template
+              ,(pm/template-head-builder
+                :tags '("project")
+                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]"))))))
 
 (cl-defun pm/project-capture-existing (node)
   (org-roam-capture-
    :goto nil
    :info nil
    :keys nil
-   :templates `(("a" "Edit project" entry
-                 ,pm/note-basic-entry
-                 :target (file+head+olp
-                          ,pm/project-note-name-template
-                          ,(pm/template-head-builder
-                            :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
-                          ,'("Abstract")))
-                ("b" "Insert project todo" entry
-                 ,pm/note-todo-entry
-                 :target (file+head+olp
-                          ,pm/project-note-name-template
-                          ,(pm/template-head-builder
-                            :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
-                          ,'("Tasks")))
-                ("c" "Insert project idea" entry
-                 ,pm/note-idea-entry
-                 :target (file+head+olp
-                          ,pm/project-note-name-template
-                          ,(pm/template-head-builder
-                            :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
-                          ,'("Ideas")))
-                ("d" "Insert project journal" entry
-                 ,pm/note-idea-entry
-                 :target (file+head+olp
-                          ,pm/project-note-name-template
-                          ,(pm/template-head-builder
-                            :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
-                          ,'("Journal"))))
    :node node
+   :templates project-capture-templates
    :props '(:unnarrowed t :prepend t)))
 
 (cl-defun pm/project-capture-new (node)
@@ -1380,7 +1391,7 @@ All projects will have the project tag
                           ,(pm/template-head-builder
                             :tags '("project")
                             :prompt-for-tags t
-                            :headings '("Abstract" "Tasks" "Ideas"))
+                            :headings '("Abstract" "Tasks" "Links" "Journal" "Ideas"))
                           ,'("Abstract"))))
    :node node
    :props '(:unnarrowed t :empty-lines 1)))
@@ -1512,6 +1523,34 @@ Classification is an individual person or groups of people, possibly with multip
                    ,(unless no-properties ":PROPERTIES:\n:CREATED:  %U\n:END:")
                    ,(when entry-content entry-content))
                  :between "\n")))
+#+end_src
+**** time functions
+
+#+begin_src emacs-lisp
+(require 'ts)
+
+(cl-defun pm/todays-date ()
+  (let* ((now (ts-now))
+         (day (ts-day now))
+         (suffix (cond ((memq day '(11 12 13)) "th")
+                       ((= 1 (% day 10)) "st")
+                       ((= 2 (% day 10)) "nd")
+                       ((= 3 (% day 10)) "rd")
+                       (t "th"))))
+    (concat (ts-day-name now)
+            ", "
+            (format "%s" (ts-day-of-month-num now))
+            suffix
+            " of "
+            (format "%s" (ts-month-name now))
+            " "
+            (format "%s" (ts-year now))
+            )))
+
+(cl-defun pm/current-time ()
+  (let ((now (ts-now)))
+      (concat (format "%s" (ts-H now)) ":" (format "%s" (ts-M now)))))
+
 #+end_src
 ** Agenda
 
