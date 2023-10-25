@@ -77,6 +77,7 @@
                 org-contrib
                 rainbow-delimiters
                 which-key
+                ts
               ];
           };
 

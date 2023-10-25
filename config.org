@@ -1333,32 +1333,40 @@ All projects will have the project tag
    :goto nil
    :info nil
    :keys nil
-   :templates `(("a" "Edit project" plain
+   :templates `(("a" "Edit project" entry
                  ,pm/note-basic-entry
                  :target (file+head+olp
                           ,pm/project-note-name-template
                           ,(pm/template-head-builder
                             :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas"))
+                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
                           ,'("Abstract")))
-                ("b" "Insert project todo" plain
+                ("b" "Insert project todo" entry
                  ,pm/note-todo-entry
                  :target (file+head+olp
                           ,pm/project-note-name-template
                           ,(pm/template-head-builder
                             :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas"))
+                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
                           ,'("Tasks")))
-                ("c" "Insert project idea" plain
+                ("c" "Insert project idea" entry
                  ,pm/note-idea-entry
                  :target (file+head+olp
                           ,pm/project-note-name-template
                           ,(pm/template-head-builder
                             :tags '("project")
-                            :headings '("Abstract" "Tasks" "Ideas"))
-                          ,'("Ideas"))))
+                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
+                          ,'("Ideas")))
+                ("d" "Insert project journal" entry
+                 ,pm/note-idea-entry
+                 :target (file+head+olp
+                          ,pm/project-note-name-template
+                          ,(pm/template-head-builder
+                            :tags '("project")
+                            :headings '("Abstract" "Tasks" "Ideas" "Journal"))
+                          ,'("Journal"))))
    :node node
-   :props '(:unnarrowed t)))
+   :props '(:unnarrowed t :prepend t)))
 
 (cl-defun pm/project-capture-new (node)
   (org-roam-capture-
@@ -1505,7 +1513,6 @@ Classification is an individual person or groups of people, possibly with multip
                    ,(when entry-content entry-content))
                  :between "\n")))
 #+end_src
-
 ** Agenda
 
 *** Gather ~.org~ files relevant for agenda
