@@ -432,6 +432,30 @@ If some elements are missing, they will be stripped out."
         (pm/project-capture-existing node)
       (pm/project-capture-new node))))
 
+(cl-defun pm/project-note-capture--context ()
+  "Determines the context a project note capture process exists:
+Returns 4 cases:
+
+'project-note - when in a buffer of one of the specific project notes
+'note - when in a non-project note
+'project - when in a projectile recognised project with path
+nil - when in any non-project non-note buffer"
+  (cond
+   ((and (fboundp 'org-roam-buffer-p)
+         (org-roam-buffer-p))
+    (if (cl-some (lambda (tag)
+                   (string= tag "project"))
+                 (org-roam-node-tags (org-roam-node-at-point)))
+        'project-note
+      'note))
+   ((and (fboundp 'projectile-project-p)
+         (projectile-project-p))
+    'project)
+   (t nil)))
+
+(pm/leader
+  "t" '(pm/project-note-capture--context :which-key "test-placeholder"))
+
 (pm/leader
   "np" '(pm/project-capture :which-key "capture project"))
 
