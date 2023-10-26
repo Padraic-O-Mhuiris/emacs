@@ -11,6 +11,16 @@
 
 ;;; Code:
 
+;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
+(defvar pm/initialized nil)
+(add-hook 'emacs-startup-hook
+          #'(lambda ()
+              (setq pm/initialized t)))
+
+;; On first time initialization start the emacs server
+(unless pm/initialized
+  (server-start))
+
 ;; Setting this to nil improves performance on startup, the file-name-handler-alist uses lookup keys for file access which can be slow sometimes. This is automatically restored on startup
 (defvar file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
@@ -35,12 +45,6 @@
     (setq native-comp-deferred-compilation t)
     (add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
     (setq package-native-compile t)))
-
-;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
-(defvar pm/initialized nil)
-(add-hook 'emacs-startup-hook
-          #'(lambda ()
-              (setq pm/initialized t)))
 
 ;; Don't load the default.el emacs system configuration file
 ;; NOTE: If this configuration or parts thereof are moved into the nix emacs build, this must be set to nil
