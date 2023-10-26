@@ -1548,9 +1548,19 @@ Classification is an individual person or groups of people, possibly with multip
             )))
 
 (cl-defun pm/current-time ()
-  (let ((now (ts-now)))
-      (concat (format "%s" (ts-H now)) ":" (format "%s" (ts-M now)))))
+  (let* ((now (ts-now))
+         (hour (ts-H now))
+         (minute (ts-M now))
+         (hour-formatted (if (< hour 10)
+                             (format "0%s" hour)
+                           (format "%s" hour)))
+         (minute-formatted (if (< minute 10)
+                             (format "0%s" minute)
+                           (format "%s" minute))))
+      (concat hour-formatted ":" minute-formatted)))
 
+
+;; (pm/current-time)
 #+end_src
 ** Agenda
 
