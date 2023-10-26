@@ -1325,8 +1325,8 @@ All projects will have the project tag
                 (cl-some (lambda (tag)
                            (string= tag "project"))
                          (org-roam-node-tags node)))))
-(defvar project-capture-templates
-  `(("a" "Edit project" entry
+(defun project-capture-templates ()
+  `(("a" "Edit project" plain
      ,pm/note-basic-entry
      :target (file+head+olp
               ,pm/project-note-name-template
@@ -1376,7 +1376,7 @@ All projects will have the project tag
    :info nil
    :keys nil
    :node node
-   :templates project-capture-templates
+   :templates (project-capture-templates)
    :props '(:unnarrowed t :prepend t)))
 
 (cl-defun pm/project-capture-new (node)
