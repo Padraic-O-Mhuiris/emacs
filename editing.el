@@ -20,12 +20,6 @@
 ;; Balances behavior between completion and indentation dependent on context
 (setq-default tab-always-indent 'complete)
 
-;; These might need to be defined before evil is required
-(setq evil-want-integration t)
-(setq evil-want-C-u-scroll t)
-(setq evil-want-C-i-jump nil)
-(setq evil-undo-system 'undo-tree)
-
 ;; Use evil-mode
 (evil-mode 1)
 

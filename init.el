@@ -11,9 +11,15 @@
 
 ;;; Code:
 
+;; These might need to be defined before evil is required
+
 ;; Requires to be initialised prior to evil being required
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-keybinding nil)
+(setq evil-want-integration t)
+(setq evil-want-C-u-scroll t)
+(setq evil-want-C-i-jump nil)
+(setq evil-undo-system 'undo-tree)
 
 (require 'savehist)
 (require 'no-littering)
@@ -55,6 +61,12 @@
 (require 'smartparens)
 (require 'helpful)
 (require 'nix-mode)
+
+;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
+(defvar pm/initialized nil)
+(add-hook 'emacs-startup-hook
+          #'(lambda ()
+              (setq pm/initialized t)))
 
 (load-file (concat user-emacs-directory "functions.el"))
 (load-file (concat user-emacs-directory "startup.el"))

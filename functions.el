@@ -70,7 +70,6 @@
                                           (levels 0)
                                           (tags `())
                                           (no-properties nil))
-  (message todo-state)
   (let
       ((tag-str (if (> (length tags) 0)
                     (pm/list2str tags :between ":" :before " :" :after ":")
