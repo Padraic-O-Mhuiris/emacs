@@ -1358,17 +1358,17 @@ All projects will have the project tag
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
               ,'("Links")))
-    ("e" "Insert project journal" plain
-     ,(pm/template-entry-builder :title-content (concat "[ " (pm/current-time) " ]")
-                                 :entry-content "%?"
+    ("e" "Insert project journal" entry
+     ,(pm/template-entry-builder :title-content (concat "[ " (pm/todays-date) " ]")
+                                 :entry-content (concat "*** [ " (pm/current-time) " ]\n%?")
                                  :no-properties t
-                                 :levels 3)
+                                 :levels 2)
      :target (file+head+olp
               ,pm/project-note-name-template
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]"))))))
+              ,'("Journal")))))
 
 (cl-defun pm/project-capture-existing (node)
   (org-roam-capture-
