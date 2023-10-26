@@ -96,6 +96,8 @@
 (pm/leader
   "o" '(:ignore t :which-key "org"))
 
+(setopt org-directory "~/notes")
+
 ;;; Agenda
 (setopt org-agenda-files (directory-files-recursively org-directory org-agenda-file-regexp))
 

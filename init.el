@@ -11,6 +11,10 @@
 
 ;;; Code:
 
+;; Requires to be initialised prior to evil being required
+;; https://github.com/emacs-evil/evil-collection/issues/60
+(setq evil-want-keybinding nil)
+
 (require 'savehist)
 (require 'no-littering)
 (require 'general)
@@ -69,7 +73,7 @@
 (load-file (concat user-emacs-directory "notes.el"))
 (load-file (concat user-emacs-directory "ide.el"))
 (load-file (concat user-emacs-directory "utils.el"))
-(load-file (concat user-emacs-directory "nix.el"))
+(load-file (concat user-emacs-directory "languages/nix.el"))
 
 (provide 'init)
 ;;; init.el ends here

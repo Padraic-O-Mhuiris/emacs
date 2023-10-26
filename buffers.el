@@ -19,7 +19,7 @@
 (add-to-list 'kill-buffer-query-functions 'pm/suppress-save-buffer-query-function)
 
 ;; Set initial buffer on startup
-(setq initial-buffer-choice "~/.config/emacs/config.org")
+(setq initial-buffer-choice "~/.config/emacs/init.el")
 
 ;; Scratch buffer should always be blank
 (setq initial-scratch-message nil)

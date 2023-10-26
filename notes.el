@@ -10,8 +10,7 @@
 ;; A fully fledged, reproducible Emacs configuration
 
 ;;; Code:
-(setopt org-directory "~/notes"
-        org-roam-directory org-directory
+(setopt org-roam-directory org-directory
         org-roam-dailies-directory "daily/")
 (setq org-roam-database-connector 'sqlite-builtin)
 
