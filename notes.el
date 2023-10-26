@@ -1,349 +1,26 @@
-;;; config.el --- Padraic's Emacs configuration -*- lexical-binding: t -*-
+;;; notes.el --- Padraic's Emacs configuration -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2023-2023 Patrick H Morris
 
 ;; Author: Patrick H Morris <patrick.morris.310@gmail.com>
 ;; Keywords: internal
-;; URL: https://panadestein.github.io/emacsd/
+;; URL: https://github.com/Padraic-O-Mhuiris/emacs
 
 ;;; Commentary:
 ;; A fully fledged, reproducible Emacs configuration
 
 ;;; Code:
-
-(load-file (concat user-emacs-directory "functions.el"))
-
-(defvar file-name-handler-alist-original file-name-handler-alist)
-(setq file-name-handler-alist nil)
-
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq file-name-handler-alist file-name-handler-alist-original)))
-
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
-
-(defvar pm/gc-cons-threshold 100000000)
-
-(add-hook 'emacs-startup-hook ; hook run after loading init files
-          (lambda ()
-            (setq gc-cons-threshold pm/gc-cons-threshold
-                  gc-cons-percentage 0.1
-                  file-name-handler-alist file-name-handler-alist-original)))
-
-(add-hook 'minibuffer-setup-hook
-          #'(lambda ()
-              (setq gc-cons-threshold (* pm/gc-cons-threshold 2))))
-(add-hook 'minibuffer-exit-hook
-          #'(lambda ()
-              (garbage-collect)
-              (setq gc-cons-threshold pm/gc-cons-threshold)))
-
-(when (and (fboundp 'native-comp-available-p) (native-comp-available-p))
-  (progn
-    (setq native-comp-async-report-warnings-errors nil)
-    (setq native-comp-deferred-compilation t)
-    (add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
-    (setq package-native-compile t)))
-
-(defvar pm/initialized nil)
-
-(add-hook 'emacs-startup-hook
-          #'(lambda ()
-              (setq pm/initialized t)))
-
-(setq user-full-name "Patrick H Morris"
-      user-mail-address "patrick.morris.310@gmail.com")
-
-(setq inhibit-default-init t)
-
-(let ((customization-file
-       (expand-file-name "custom.el" user-emacs-directory)))
-  (unless (file-exists-p customization-file)
-    (write-region "" nil customization-file))
-  (setq custom-file customization-file)
-  (load custom-file 'noerror))
-
-(setq inhibit-startup-message t)
-
-(defun display-startup-echo-area-message ()
-  (display-startup-time))
-
-(setq initial-buffer-choice "~/.config/emacs/config.org")
-
-(setq initial-scratch-message nil)
-
-(setq large-file-warning-threshold 100000000)
-
-(global-auto-revert-mode t)
-(setq auto-revert-interval 1)
-
-(prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-
-(setq make-backup-files nil)
-
-(setq sentence-end-double-space nil)
-
-(defun pm/suppress-save-buffer-query-function ()
-  (set-buffer-modified-p nil)
-  t) ; Return t so other functions in kill-buffer-query-functions get called.
-
-(add-to-list 'kill-buffer-query-functions 'pm/suppress-save-buffer-query-function)
-
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(set-fringe-mode 10)
-(menu-bar-mode -1)
-
-(setq visible-bell t)
-
-(setq ring-bell-function 'ignore)
-
-(blink-cursor-mode -1)
-
-(setq scroll-margin 0
-      scroll-conservatively 100000
-      scroll-preserve-screen-position 1)
-
-(fset 'yes-or-no-p 'y-or-n-p)
-
-(if init-file-debug
-    (setq warning-minimum-level :debug)
-  (setq warning-minimum-level :emergency))
-
-(require 'savehist)
-(savehist-mode)
-
-(require 'no-littering)
-
-(require 'general)
-(general-evil-setup t)
-
-(general-create-definer pm/leader
-  :keymaps '(normal insert visual emacs)
-  :prefix "SPC"
-  :global-prefix "C-SPC")
-
-(require 'which-key)
-(which-key-mode)
-(setq which-key-idle-delay 0)
-
-(pm/leader
-  "r" '(pm/reload-config :which-key "Reload config")
-  "u" '(:ignore t :which-key "ui")
-  "ut" '(counsel-load-theme :which-key "Select Theme"))
-
-(general-define-key
- "<escape>" 'keyboard-escape-quit)
-
-(require 'doom-themes)
-(setq doom-themes-enable-bold t    
-      doom-themes-enable-italic t)
-
-(unless pm/initialized (load-theme 'doom-nord-aurora t)) 
-(doom-themes-visual-bell-config)
-(doom-themes-org-config)
-
-(set-face-attribute 'default nil :font "Iosevka Comfy Fixed" :height 100)
-
-(require 'all-the-icons)
-
-(require 'doom-modeline)
-(doom-modeline-mode t)
-(setq doom-modeline-height 55)
-(setq doom-modeline-buffer-file-name-style 'relative-to-project)
-(setq doom-line-numbers-style 'relative)
-(setq doom-modeline-major-mode-icon t)
-(setq doom-modeline-buffer-state-icon t)
-(setq doom-modeline-major-mode-color-icon t)
-(setq doom-modeline-window-width-limit nil)
-
-(set-fringe-mode 0)
-
-(require 'winner)
-(winner-mode t)
-
-(require 'ace-window)
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-
-(require 'so-long)
-
-(add-hook 'after-init-hook 'global-so-long-mode)
-
-(setq fill-column 80)
-
-(add-hook 'text-mode-hook 'visual-line-mode)
-(add-hook 'prog-mode-hook 'visual-line-mode)
-
-(require 'visual-fill-column)
-(add-hook 'visual-line-mode-hook
-          #'(lambda ()
-              (setq visual-fill-column-width 140) 
-              (visual-fill-column-mode)))
-
-(setq mode-line-right-align-edge 'right-fringe)
-
-(setq-default indent-tabs-mode nil)
-(setq tab-width 2)
-
-(setq-default tab-always-indent 'complete)
-
-(setq evil-want-integration t)
-(setq evil-want-keybinding nil)
-(setq evil-want-C-u-scroll t)
-(setq evil-want-C-i-jump nil)
-(setq evil-undo-system 'undo-tree)
-
-(require 'evil)
-(evil-mode 1)
-
-(require 'evil-collection)
-(evil-collection-init)
-
-(evil-set-initial-state 'messages-buffer-mode 'normal)
-(evil-set-initial-state 'dashboard-mode 'normal)
-
-(general-def 'evil-insert-state-map
-  "C-g" 'evil-normal-state
-  "C-h" 'evil-delete-backward-char-and-join)
-
-(general-define-key 
- :states 'motion
- "j" 'evil-next-visual-line
- "k" 'evil-previous-visual-line)
-
-(require 'undo-tree)
-(general-define-key
- "C-x u" 'undo-tree-visualize)
-
-(global-undo-tree-mode)
-(setq undo-tree-visualizer-timestamps t)
-(setq undo-tree-visualizer-diff t)
-(setq undo-tree-show-help-in-visualize-buffer t)
-(setq undo-tree-auto-save-history t)
-(setq undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo"))))
-
-(require 'magit)
-(setopt magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1) ; What does this do?
-
-(pm/leader
-  "m" '(:ignore t :which-key "magit")
-  "mm" '(magit-status :which-key "status"))
-
-(require 'org)
-
-(pm/leader
-  "o" '(:ignore t :which-key "org"))
-
-(setq org-ellipsis " ⤵")
-
-(require 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-(setq org-startup-indented t)
-(add-hook 'org-mode-hook 'org-indent-mode)
-
-(setq org-hide-emphasis-markers t)
-
-(require 'org-tempo)
-(add-to-list 'org-structure-template-alist
-             '("el" . "src emacs-lisp"))
-
-(setq org-src-preserve-indentation t)
-
-(setq org-src-tab-acts-natively t)
-
-(setq org-confirm-babel-evaluate nil)
-
-(setq org-startup-folded t)
-
-(require 'time-stamp)
-
-(setq time-stamp-active t)
-(setq time-stamp-start "#\\+last_modified:[ \t]")
-(setq time-stamp-end "$")
-(setq time-stamp-format "\[%Y-%m-%d %a %H:%M\]")
-
-(add-hook 'before-save-hook #'time-stamp)
-
-(require 'org-cliplink)
-
-(setq ob-mermaid-cli-path (getenv "MERMAID_CLI"))
-(add-to-list 'org-babel-load-languages '(mermaid . t))
-
-(add-to-list 'org-structure-template-alist
-             '("mrm" . "src mermaid :file /tmp/test.png"))
-
-(setq org-catch-invisible-edits t)
-
-(setq org-todo-keywords
-      '((sequence
-         "TODO(t)" ;; A task that needs doing and is ready to do
-         "PROG(p!)" ;; A task that is in progress
-         "NEXT(n!)" ;; A task which should be done next
-         "WAIT(w@/!)" ;; A task which is held up for an external reason
-         "HOLD(h@/!)" ;; A task which is paused
-         "|" ;;
-         "DONE(d!)" ;; When a task is completed
-         "KILL(k@/!)" ;; When a task is rejected
-         "FAIL(f@/!)" ;; When a task is failed
-         )
-        (sequence
-         "NOTE" ;; Not necessary for agenda, just for highlighting in places
-         "LINK" ;; A naked url which is to be changed to a link note
-         "IDEA" ;; A piece of information which might manifest into something
-         "|")))
-
-(setq org-log-done 'note)
-(setq org-log-into-drawer t)
-
-(setq org-enforce-todo-dependencies t)
-
-(defun pm/run-org-insert-todo-heading-hook (&rest _)
-  "Run `pm/org-insert-todo-heading-hook'."
-  (run-hooks 'pm/org-insert-todo-heading-hook))
-
-(advice-add 'org-insert-todo-heading :after 'pm/run-org-insert-todo-heading-hook)
-(advice-add 'org-insert-todo-heading-respect-content :after 'pm/run-org-insert-todo-heading-hook)
-(advice-add 'org-insert-todo-subheading :after 'pm/run-org-insert-todo-heading-hook)
-
-;; (add-hook 'org-after-todo-state-change-hook #'my/log-todo-creation-date)
-
-(setopt org-insert-heading-respect-content t)
-(setopt org-insert-todo-heading-respect-content t)
-
-(require 'org-expiry)
-
-(defun pm/org-add-created-timestamp ()
-  (save-excursion
-    (org-back-to-heading)
-    (org-set-property "CREATED"
-                      (format-time-string
-                       (org-time-stamp-format 'long 'inactive)
-                       (org-current-time)))))
-
-(add-hook 'pm/org-insert-todo-heading-hook 'pm/org-add-created-timestamp)
-
-;; (defun pm/org-todo-heading-add-ordered-property ()
-;;   (when (org-at-heading-p)
-;;     (org-set-property "ORDERED" "t")))
-
-;; (add-hook 'pm/org-insert-todo-heading-hook 'pm/org-todo-heading-add-ordered-property)
-
-(require 'org-roam)
 (setopt org-directory "~/notes"
         org-roam-directory org-directory
         org-roam-dailies-directory "daily/")
 (setq org-roam-database-connector 'sqlite-builtin)
+
 (org-roam-db-autosync-mode)
 
 (pm/leader
   "n" '(:ignore t :which-key "notes"))
 
+;; y/n prompt prevention in org-roam captures
 (defun pm/return-t (orig-fun &rest args) t)
 (defun pm/disable-yornp (orig-fun &rest args)
   (advice-add 'yes-or-no-p :around #'pm/return-t)
@@ -354,6 +31,7 @@
     res))
 (advice-add 'org-roam-capture--finalize :around #'pm/disable-yornp)
 
+;;; Node display
 (defun pm/rpartial (fn &rest args)
   "Return a partial application of FUN to right-hand ARGS.
 
@@ -418,46 +96,29 @@ If some elements are missing, they will be stripped out."
 (add-to-list 'org-roam-node-template-prefixes '("pm/tags" . "#"))
 (add-to-list 'org-roam-node-template-prefixes '("pm/type" . "@"))
 
+;; Note Entries -- probably should delete in favour of more custom solutions
 (defvar pm/note-basic-entry (pm/template-entry-builder :entry-content "%?" :no-properties t))
-
 (defvar pm/note-todo-entry (pm/template-entry-builder :todo-state "TODO" :levels 2 :title-content "%?"))
-
 (defvar pm/note-journal-entry (pm/template-entry-builder :title-content "[%<%T>]\n %?" :levels 2 :no-properties t))
-
 (defvar pm/note-idea-entry (pm/template-entry-builder :todo-state "IDEA" :levels 2 :title-content "%?"))
-
 (defvar pm/note-link-entry (pm/template-entry-builder
                             :no-properties t
                             :title-content "%(org-cliplink-capture)"))
 
+;; Note names
 (defvar pm/default-note-name-template "%<%s>__${slug}.org")
-
 (defvar pm/project-note-name-template "project/${slug}.org")
-
 (defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
-
 (defvar pm/people-note-name-template "people/<%s>__${slug}.org")
 
+;; Note targets - are these used?
 (defvar pm/basic-note-target `(file+head ,pm/default-note-name-template ,(pm/template-head-builder)))
-
 (defvar pm/action-note-target
   `(file+head
     ,pm/default-note-name-template
     ,(pm/template-head-builder
       :headings '("Journal" "Tasks" "Ideas" "Links")
       )))
-
-(defvar pm/basic-note-template
-  `("d" "" plain
-    pm/note-basic-entry
-    :target ,pm/basic-note-target
-    :unnarrowed t
-    :empty-lines-before 1))
-
-(defvar pm/note-find-prompt "<[Note]> ")
-
-(pm/leader
-  "nf" '(:ignore t :which-key "find notes"))
 
 (cl-defun pm/note-read (&key (initial-input nil)
                              (filter-fn nil)
@@ -472,6 +133,8 @@ If some elements are missing, they will be stripped out."
 
 (pm/leader
   "nf" '(pm/note-find :which-key "find note"))
+
+(defvar pm/note-find-prompt "<[Note]> ")
 
 (cl-defun pm/note-capture-new (&key node)
   (interactive)
@@ -587,14 +250,6 @@ If some elements are missing, they will be stripped out."
                             ,'("Emails"))))
      :node node
      :props '(:unnarrowed t))))
-
-
-;; (cl-defun pm/project-capture ()
-;;   (interactive)
-;;   (let ((node (pm/project-read)))
-;;     (if (org-roam-node-file node)
-;;         (pm/project-capture-existing node)
-;;       (pm/project-capture-new node))))
 
 (pm/leader
   "nb" '(pm/chore-capture :which-key "capture chore"))
@@ -781,181 +436,4 @@ If some elements are missing, they will be stripped out."
 (pm/leader
   "np" '(pm/project-capture :which-key "capture project"))
 
-(require 'ts)
-
-(cl-defun pm/todays-date ()
-  (let* ((now (ts-now))
-         (day (ts-day now))
-         (suffix (cond ((memq day '(11 12 13)) "th")
-                       ((= 1 (% day 10)) "st")
-                       ((= 2 (% day 10)) "nd")
-                       ((= 3 (% day 10)) "rd")
-                       (t "th"))))
-    (concat (ts-day-name now)
-            ", "
-            (format "%s" (ts-day-of-month-num now))
-            suffix
-            " of "
-            (format "%s" (ts-month-name now))
-            " "
-            (format "%s" (ts-year now))
-            )))
-
-(cl-defun pm/current-time ()
-  (let* ((now (ts-now))
-         (hour (ts-H now))
-         (minute (ts-M now))
-         (hour-formatted (if (< hour 10)
-                             (format "0%s" hour)
-                           (format "%s" hour)))
-         (minute-formatted (if (< minute 10)
-                             (format "0%s" minute)
-                           (format "%s" minute))))
-      (concat hour-formatted ":" minute-formatted)))
-
-
-;; (pm/current-time)
-
-(setopt org-agenda-files (directory-files-recursively org-directory org-agenda-file-regexp))
-
-(defun pm/org-agenda-menu ()
-  (interactive)
-  (org-agenda))
-
-(pm/leader
-  "oa" '(pm/org-agenda-menu :which-key "agenda"))
-
-(setq org-agenda-restore-windows-after-quit t)
-
-(require 'projectile)
-(projectile-mode +1)
-
-(add-to-list 'projectile-globally-ignored-directories "/nix/*")
-
-(setq projectile-project-search-path
-      '(
-        "~/.config/emacs"
-        "~/notes"
-        ("~/code" . 4)))
-
-(pm/leader
-  "p" '(:ignore t :which-key "switch project")
-  "pp" '(projectile-switch-project :which-key "switch project")
-  "pf" '(projectile-find-file :which-key "find project file")
-  "pb" '(projectile-switch-to-buffer :which-key "find project buffer")
-  ;; ... add other projectile-specific bindings as needed
-  )
-(setq projectile-sort-order 'recentf)
-(setq projectile-per-project-compilation-buffer t)
-;; (use-package projectile  
-;;   :straight t
-;;   :diminish projectile-mode
-;;   :config (projectile-mode)
-;;   :custom ((projectile-completion-system 'ivy))
-;;   :bind-keymap
-;;   ("C-c p" . projectile-command-map)
-;;   :init
-;;   ;; NOTE: Set this to the folder where you keep your Git repos!
-;;   (when (file-directory-p "~/code")
-;;     (setq projectile-project-search-path '("~/code")))
-;;   (setq projectile-switch-project-action #'projectile-dired))
-
-;; (use-package counsel-projectile  
-;;   :straight t
-;;   :after projectile
-;;   :config (counsel-projectile-mode))
-
-(require 'vertico)
-(vertico-mode)
-
-;; Different scroll margin
-(setq vertico-scroll-margin 0)
-
-;; Show more candidates
-(setq vertico-count 20)
-
-;; Grow and shrink the Vertico minibuffer
-(setq vertico-resize t)
-
-;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-(setq vertico-cycle t)
-
-(require 'corfu)
-
-(global-corfu-mode)
-(setq corfu-auto t
-      corfu-quit-no-match 'separator)
-
-(setq completion-cycle-threshold 3)
-(setq tab-always-indent 'complete)
-
-(require 'orderless)
-(setq completion-styles '(orderless basic)
-      completion-category-overrides '((file (styles basic partial-completion))))
-
-(require 'consult)
-(require 'consult-projectile)
-(require 'consult-org-roam)
-(require 'consult-notes)
-(require 'consult-dir)
-
-(require 'marginalia)
-(marginalia-mode)
-
-(require 'embark)
-(require 'embark-consult)
-
-(general-define-key
- "C-." 'embark-act
- "C-;" 'embark-dwim
- "C-h B" 'embark-bindings)
-
-;; Optionally replace the key help with a completing-read interface
-(setq prefix-help-command #'embark-prefix-help-command)
-;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-;; strategy, if you want to see the documentation from multiple providers.
-(add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-
-(add-to-list 'display-buffer-alist
-             '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-               nil
-               (window-parameters (mode-line-format . none))))
-
-(add-hook 'embark-collect-mode-hook 'consult-preview-at-point-mode)
-
-(require 'highlight-numbers)
-(add-hook 'prog-mode-hook 'highlight-numbers-mode)
-
-(require 'rainbow-delimiters)
-(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-
-(column-number-mode)
-(global-display-line-numbers-mode t)
-(setq display-line-numbers 'relative)
-
-(setq display-line-numbers-width-start t)
-
-(require 'smartparens)
-(add-hook 'prog-mode-hook 'smartparens-mode)
-
-(require 'nix-mode)
-(add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
-
-(require 'esup)
-
-(require 'helpful)
-
-(general-define-key
- "C-h f" 'helpful-function
- "C-h v" 'helpful-variable
- "C-h k" 'helpful-key)
-
-(defun pm/reload-config ()
-  "Reloads the emacs configuration"
-  (interactive)
-  (load-file (concat user-emacs-directory "init.el")))
-
-(provide 'config.el)
-;;; config.el ends here
+(provide 'notes.el)

@@ -94,5 +94,40 @@
                     (time-subtract after-init-time before-init-time)))
            gcs-done))
 
+(cl-defun pm/todays-date ()
+  (let* ((now (ts-now))
+         (day (ts-day now))
+         (suffix (cond ((memq day '(11 12 13)) "th")
+                       ((= 1 (% day 10)) "st")
+                       ((= 2 (% day 10)) "nd")
+                       ((= 3 (% day 10)) "rd")
+                       (t "th"))))
+    (concat (ts-day-name now)
+            ", "
+            (format "%s" (ts-day-of-month-num now))
+            suffix
+            " of "
+            (format "%s" (ts-month-name now))
+            " "
+            (format "%s" (ts-year now))
+            )))
+
+(cl-defun pm/current-time ()
+  (let* ((now (ts-now))
+         (hour (ts-H now))
+         (minute (ts-M now))
+         (hour-formatted (if (< hour 10)
+                             (format "0%s" hour)
+                           (format "%s" hour)))
+         (minute-formatted (if (< minute 10)
+                             (format "0%s" minute)
+                           (format "%s" minute))))
+      (concat hour-formatted ":" minute-formatted)))
+
+(defun pm/reload-config ()
+  "Reloads the emacs configuration"
+  (interactive)
+  (load-file (concat user-emacs-directory "init.el")))
+
 (provide 'functions.el)
 ;;; functions.el ends here
