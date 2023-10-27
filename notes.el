@@ -246,7 +246,15 @@ If some elements are missing, they will be stripped out."
                             ,(pm/template-head-builder
                               :tags '("chore")
                               :headings headings)
-                            ,'("Emails"))))
+                            ,'("Emails")))
+                  ("d" "Clothes" entry
+                   ,pm/note-todo-entry
+                   :target (file+head+olp
+                            "chore.org"
+                            ,(pm/template-head-builder
+                              :tags '("chore")
+                              :headings headings)
+                            ,'("Clothes"))))
      :node node
      :props '(:unnarrowed t))))
 
