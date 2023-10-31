@@ -392,16 +392,15 @@ If some elements are missing, they will be stripped out."
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
               ,'("Links")))
     ("e" "Insert project journal" entry
-     ,(pm/template-entry-builder :title-content (concat "[ " (pm/todays-date) " ]")
-                                 :entry-content (concat "*** [ " (pm/current-time) " ]\n%?")
+     ,(pm/template-entry-builder :title-content (concat "[ " (pm/current-time) " ]\n%?")
                                  :no-properties t
-                                 :levels 2)
+                                 :levels 3)
      :target (file+head+olp
               ,pm/project-note-name-template
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Journal")))))
+              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]"))))))
 
 (cl-defun pm/project-capture-existing (node)
   (org-roam-capture-
