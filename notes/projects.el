@@ -10,7 +10,7 @@
 ;; A fully fledged, reproducible Emacs configuration
 
 ;;; Code:
-(cl-defun pm/project-read ()
+(cl-defun pm/project-note-read ()
   (interactive)
   (pm/note-read
    :prompt "Select from projects: "
@@ -20,39 +20,34 @@
                          (org-roam-node-tags node)))))
 
 (defun pm/project-capture-templates ()
-  `(("a" "Edit project" plain
-     ,pm/note-basic-entry
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Abstract")))
-    ("b" "Insert project todo" entry
+  `(("a" "Insert project todo" entry
      ,pm/note-todo-entry
      :target (file+head+olp
               ,pm/project-note-name-template
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Tasks")))
-    ("c" "Insert project idea" entry
+              ,'("Tasks"))
+     :prepend t)
+    ("b" "Insert project idea" entry
      ,pm/note-idea-entry
      :target (file+head+olp
               ,pm/project-note-name-template
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Ideas")))
-    ("d" "Insert project link" item
+              ,'("Ideas"))
+     :prepend t)
+    ("c" "Insert project link" item
      "%(org-cliplink-capture)"
      :target (file+head+olp
               ,pm/project-note-name-template
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Links")))
-    ("e" "Insert project journal" entry
+              ,'("Links"))
+     :prepend t)
+    ("d" "Insert project journal" entry
      ,(pm/template-entry-builder :title-content (concat "[ " (pm/current-time) " ]\n%?")
                                  :no-properties t
                                  :levels 3)
@@ -61,7 +56,8 @@
               ,(pm/template-head-builder
                 :tags '("project")
                 :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]"))))))
+              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]")))
+     :prepend t)))
 
 (cl-defun pm/project-capture-existing (node)
   (org-roam-capture-
@@ -95,12 +91,12 @@
       nil
     (progn
       (make-directory (concat org-directory "/project"))))
-  (let ((node (pm/project-read)))
+  (let ((node (pm/project-note-read)))
     (if (org-roam-node-file node)
         (pm/project-capture-existing node)
       (pm/project-capture-new node))))
 
-(cl-defun pm/project-note-capture--context ()
+(cl-defun pm/project-note-context ()
   "Determines the context a project note capture process exists:
 Returns 4 cases:
 
@@ -121,11 +117,54 @@ nil - when in any non-project non-note buffer"
     'project)
    (t nil)))
 
-(pm/leader
-  "t" '(pm/project-note-capture--context :which-key "test-placeholder"))
+(cl-defun pm/project-note-capture--project-note (&optional capture-key)
+  (org-roam-capture-
+   :goto nil
+   :info nil
+   :keys capture-key
+   :node (org-roam-node-at-point)
+   :templates (pm/project-capture-templates)
+   :props '(:immediate-finish t :jump-to-captured t)))
 
+;; Keep capture template structure uniform
+(cl-defun pm/project-note-capture-2 (&optional capture-key)
+  (let ((ctx (pm/project-note-context)))
+    (cond
+     ((eq ctx 'project-note)
+      (pm/project-note-capture--project-note capture-key))
+     ((eq ctx 'project)
+      ;; Find associated project
+      ;; - If none exists, create a new one with suggested title or select from list
+      nil
+      )
+     (t
+      ;; Otherwise, select from projects and capture
+      nil
+      ))))
+
+(cl-defun pm/project-note-capture-todo ()
+  (interactive)
+  (pm/project-note-capture-2 "a"))
+  
+
+(cl-defun pm/project-note-capture-idea ()
+  (interactive)
+  (pm/project-note-capture-2 "b"))
+
+(cl-defun pm/project-note-capture-link ()
+  (interactive)
+  (pm/project-note-capture-2 "c"))
+
+(cl-defun pm/project-note-capture-journal ()
+  (interactive)
+  (pm/project-note-capture-2 "d"))
 
 (pm/leader
-  "np" '(pm/project-capture :which-key "capture project"))
+  "np" '(nil :which-key "capture project")
+  "npf" '(pm/project-note-read :which-key "find project note")
+  "npt" '(pm/project-note-capture-todo :which-key "capture project todo")
+  "npi" '(pm/project-note-capture-idea :which-key "capture project idea")
+  "npl" '(pm/project-note-capture-idea :which-key "capture project link")
+  "npj" '(pm/project-note-capture-idea :which-key "capture project journal"))
 
 (provide 'projects.el)
