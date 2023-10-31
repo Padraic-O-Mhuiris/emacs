@@ -25,6 +25,7 @@
                                          (refs `())
                                          (headings `())
                                          (prompt-for-tags nil)
+                                         (project-path nil)
                                          (created "#+created_at: %U")
                                          (modified  "#+last_modified: %U"))
   "This function is the default builder for all note templates. It expects a series of keys and values in each case:
@@ -59,6 +60,7 @@
                    ,(concat "#+title: " title)
                    ,created
                    ,modified
+                   ,(when project-path (concat "#+project_path: " project-path))
                    ,file-tags
                    ,olp
                    )
@@ -127,6 +129,15 @@
   "Reloads the emacs configuration"
   (interactive)
   (load-file (concat user-emacs-directory "init.el")))
+
+
+(defun pm/get-org-keywords-from-file (file keywords)
+  "Collect values of KEYWORDS from an Org-mode FILE.
+If KEYWORDS is nil, collect all buffer-wide settings."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (org-mode)
+    (org-collect-keywords keywords)))
 
 (provide 'functions.el)
 ;;; functions.el ends here
