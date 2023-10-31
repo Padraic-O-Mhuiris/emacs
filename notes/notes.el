@@ -130,7 +130,7 @@ If some elements are missing, they will be stripped out."
 
 (cl-defun pm/note-find ()
   (interactive)
-  (org-roam-node-visit (pm/note-read :require-match t) t))
+  (org-roam-node-visit (pm/note-read :require-match t) nil))
 
 (pm/leader
   "nf" '(pm/note-find :which-key "find note"))
