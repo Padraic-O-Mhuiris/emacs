@@ -17,7 +17,7 @@
    (org-roam-node-tags node)))
 
 (cl-defun pm/note-has-project-path (node)
-  (car (pm/collect-org-keywords-from-file
+  (car (pm/get-org-keywords-from-file
         (org-roam-node-file node)
         '("project_path"))))
 
@@ -30,56 +30,84 @@
                            (string= tag "project"))
                          (org-roam-node-tags node)))))
 
-(defun pm/project-capture-templates ()
-  `(("a" "Insert project todo" entry
-     ,pm/note-todo-entry
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Tasks"))
-     :prepend t)
-    ("b" "Insert project idea" entry
-     ,pm/note-idea-entry
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Ideas"))
-     :prepend t)
-    ("c" "Insert project link" item
-     "%(org-cliplink-capture)"
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,'("Links"))
-     :prepend t)
-    ("d" "Insert project journal" entry
-     ,(pm/template-entry-builder :title-content (concat "[ " (pm/current-time) " ]\n%?")
-                                 :no-properties t
-                                 :levels 3)
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-              ,`("Journal" ,(concat "[ " (pm/todays-date) " ]")))
-     :prepend t)))
+(defun pm/project-note-capture-template-name ()
+  ""
+  "project/${slug}.org")
 
-(defun pm/project-capture-new-template ()
-  `(("a" "Basic project note" plain
-     ,pm/note-basic-entry
-     :target (file+head+olp
-              ,pm/project-note-name-template
-              ,(pm/template-head-builder
-                :tags '("project")
-                :prompt-for-tags t
-                :headings '("Abstract" "Tasks" "Links" "Journal" "Ideas"))
-              ,'("Abstract")))))
+(defun pm/project-note-capture-template-head ()
+  (pm/template-head-builder
+   :tags '("project")
+   :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal")))
+
+(defun pm/project-note-capture-template-target (olp)
+  `(file+head+olp
+    ,(pm/project-note-capture-template-name)
+    ,(pm/project-note-capture-template-head)
+    ,olp))
+
+(defun pm/project-note-capture-todo-template ()
+  `("a" "Insert project todo" entry
+    ,pm/note-todo-entry
+    :target ,(pm/project-note-capture-template-target '("Tasks"))))
+
+(defun pm/project-note-capture-idea-template ()
+  `("b" "Insert project idea" entry
+    ,pm/note-idea-entry
+    :target ,(pm/project-note-capture-template-target '("Ideas"))))
+
+(defun pm/project-note-capture-link-template ()
+  `("c" "Insert project link" item
+    ,pm/note-link-entry
+    :target ,(pm/project-note-capture-template-target '("Links"))))
+
+(defun pm/project-note-capture-journal-template ()
+  `("d" "Insert project journal" entry
+    ,(pm/template-entry-builder
+      :title-content (concat "[ " (pm/todays-date) " ]")
+      :entry-content (concat "*** [ " (pm/current-time) " ]\n%?")
+      :no-properties t
+      :levels 2)
+    :target ,(pm/project-note-capture-template-target
+              '("Journal"))
+    :prepend t))
+
+(defun pm/project-note-capture-goto-template ()
+  `("e" "Goto project" plain
+    "%?"
+    :target ,(pm/project-note-capture-template-target '("Abstract"))))
+
+(defun pm/project-note-capture-existing-templates ()
+  `(,(pm/project-note-capture-todo-template)
+    ,(pm/project-note-capture-idea-template)
+    ,(pm/project-note-capture-link-template)
+    ,(pm/project-note-capture-journal-template)
+    ,(pm/project-note-capture-goto-template)))
+
+(cl-defun pm/project-note-capture (&key (key nil)
+                                        (node nil)
+                                        (templates (pm/project-note-capture-existing-templates))
+                                        (props '()))
+  (org-roam-capture-
+   :goto nil
+   :info nil
+   :keys key
+   :node node
+   :templates templates
+   :props (append props '(:prepend t))))
+
+(cl-defun pm/project-note-capture-new (&key node project-path)
+  (pm/project-note-capture
+   :node node
+   :templates `(("a" "Project Note" plain
+                 "%?"
+                 :target `(file+head+olp
+                           ,(pm/project-note-capture-template-name)
+                           ,(pm/template-head-builder
+                             :tags '("project")
+                             :project-path project-path
+                             :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+                           '("Abstract"))))
+   :props '(:unnarrowed t :kill-buffer t)))
 
 (cl-defun pm/project-note-context ()
   "Determines the context a project note capture process exists:
@@ -102,15 +130,6 @@ nil - when in any non-project non-note buffer"
     'project)
    (t nil)))
 
-(cl-defun pm/project-note-capture--project-note (&optional capture-key)
-  (org-roam-capture-
-   :goto nil
-   :info nil
-   :keys capture-key
-   :node (org-roam-node-at-point)
-   :templates (pm/project-capture-templates)
-   :props '(:immediate-finish t :jump-to-captured t)))
-
 (cl-defun pm/project-note--find-node-by-project-path (project-path)
   (mapcar
    #'(lambda (x) (org-roam-populate (org-roam-node-create :id (car (cdr x)))))
@@ -118,13 +137,26 @@ nil - when in any non-project non-note buffer"
     #'(lambda (file)
         (string=
          project-path
-         (car (cdr (car (pm/collect-org-keywords-from-file (car file) '("project_path")))))))
+         (car (cdr (car (pm/get-org-keywords-from-file (car file) '("project_path")))))))
     (org-roam-db-query
      [:select [nodes:file nodes:id]
               :from nodes
               :join tags
               :on (= nodes:id tags:node-id)
               :where (like tags:tag "%project%")]))))
+
+(cl-defun pm/project-note-read--without-project-path-keyword ()
+  (pm/note-read
+   :prompt "Select/Create project: "
+   :filter-fn (lambda (node)
+                (and (pm/note-has-project-tag node)
+                     (not (pm/note-has-project-path node))))))
+
+(cl-defun pm/project-note-capture--project-note (&optional capture-key)
+  (pm/project-note-capture
+   :key capture-key
+   :node (org-roam-node-at-point)
+   :props '(:immediate-finish t :jump-to-captured t)))
 
 (cl-defun pm/project-note-capture--project (&optional capture-key)
   (let* ((project-path (projectile-project-p))
@@ -133,62 +165,38 @@ nil - when in any non-project non-note buffer"
     (if (> (length nodes) 1)
         (user-error "Found two project notes for path: %s" project-path)
       (if node
-          (org-roam-capture-
-           :goto nil
-           :info nil
-           :keys capture-key
+          (pm/project-note-capture
+           :key capture-key
            :node node
-           :templates (pm/project-capture-templates)
-           :props '(:unnarrowed t :kill-buffer t))
-        (let* ((project-node (pm/note-read
-                              :prompt "Select/Create project: "
-                              :filter-fn
-                              (lambda (node)
-                                (and (pm/note-has-project-tag node)
-                                     (not (pm/note-has-project-path node)))))))
+           :props (if (string= capture-key "e")
+                      '(:immediate-finish t :jump-to-captured t)
+                    '(:unnarrowed t :kill-buffer t)))
+        (let* ((project-node (pm/project-note-read--without-project-path-keyword)))
           (if (org-roam-node-file project-node)
               (progn
-                (with-temp-buffer
-                  (insert-file-contents (org-roam-node-file project-node))
-                  (org-mode)
-                  (org-roam-set-keyword "project_path" project-path)
-                  (write-file (org-roam-node-file project-node)))
-                (org-roam-capture-
-                 :goto nil
-                 :info nil
-                 :keys capture-key
+                (pm/note-insert-keyword-and-value
                  :node project-node
-                 :templates (pm/project-capture-templates)
+                 :key "project_path"
+                 :value project-path)
+                (pm/project-note-capture
+                 :key capture-key
+                 :node project-node
                  :props '(:unnarrowed t :kill-buffer t)))
-            (org-roam-capture-
-             :goto nil
-             :info nil
-             :keys nil
+            (pm/project-note-capture-new
              :node project-node
-             :templates (pm/project-capture-new-template)
-             :props '(:unnarrowed t))))))))
+             :project-path project-path)))))))
 
 (cl-defun pm/project-note-capture--other (&optional capture-key)
-  (let ((node (pm/note-read
-               :prompt "Select/Create project: "
-               :filter-fn #'pm/note-has-project-tag)))
+  (let ((node (pm/project-note-read)))
     (if (org-roam-node-file node)
-        (org-roam-capture-
-         :goto nil
-         :info nil
-         :keys capture-key
+        (pm/project-note-capture
+         :key capture-key
          :node node
-         :templates (pm/project-capture-templates)
-         :props '(:unnarrowed t :kill-buffer t))
-      (org-roam-capture-
-       :goto nil
-       :info nil
-       :keys nil
-       :node project-node
-       :templates (pm/project-capture-new-template)
-       :props '(:unnarrowed t :kill-buffer t)))))
+         :props '(:unnarrowed t :kill-buffer t)))
+    (pm/project-note-capture-new
+     :node node)))
 
-(cl-defun pm/project-note-capture (&optional capture-key)
+(cl-defun pm/project-note (&optional capture-key)
   (let ((ctx (pm/project-note-context)))
     (cond
      ((eq ctx 'project-note)
@@ -197,28 +205,33 @@ nil - when in any non-project non-note buffer"
       (pm/project-note-capture--project capture-key))
      (t (pm/project-note-capture--other capture-key)))))
 
-(cl-defun pm/project-note-capture-todo ()
+(cl-defun pm/project-note-todo ()
   (interactive)
-  (pm/project-note-capture "a"))
+  (pm/project-note "a"))
   
-(cl-defun pm/project-note-capture-idea ()
+(cl-defun pm/project-note-idea ()
   (interactive)
-  (pm/project-note-capture "b"))
+  (pm/project-note "b"))
 
-(cl-defun pm/project-note-capture-link ()
+(cl-defun pm/project-note-link ()
   (interactive)
-  (pm/project-note-capture "c"))
+  (pm/project-note "c"))
 
-(cl-defun pm/project-note-capture-journal ()
+(cl-defun pm/project-note-journal ()
   (interactive)
-  (pm/project-note-capture "d"))
+  (pm/project-note "d"))
+
+(cl-defun pm/project-note-goto ()
+  (interactive)
+  (pm/project-note "e"))
 
 (pm/leader
   "np" '(nil :which-key "capture project")
   "npf" '(pm/project-note-read :which-key "find project note")
-  "npt" '(pm/project-note-capture-todo :which-key "capture project todo")
-  "npi" '(pm/project-note-capture-idea :which-key "capture project idea")
-  "npl" '(pm/project-note-capture-link :which-key "capture project link")
-  "npj" '(pm/project-note-capture-journal :which-key "capture project journal"))
+  "npg" '(pm/project-note-goto :which-key "goto project note")
+  "npt" '(pm/project-note-todo :which-key "capture project todo")
+  "npi" '(pm/project-note-idea :which-key "capture project idea")
+  "npl" '(pm/project-note-link :which-key "capture project link")
+  "npj" '(pm/project-note-journal :which-key "capture project journal"))
 
 (provide 'projects.el)

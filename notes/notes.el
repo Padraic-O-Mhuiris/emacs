@@ -19,7 +19,6 @@
 (pm/leader
   "n" '(:ignore t :which-key "notes"))
 
-(load-file (concat user-emacs-directory "notes/projects.el"))
 
 ;; y/n prompt prevention in org-roam captures
 (defun pm/return-t (orig-fun &rest args) t)
@@ -104,11 +103,10 @@ If some elements are missing, they will be stripped out."
 (defvar pm/note-idea-entry (pm/template-entry-builder :todo-state "IDEA" :levels 2 :title-content "%?"))
 (defvar pm/note-link-entry (pm/template-entry-builder
                             :no-properties t
-                            :title-content "%(org-cliplink-capture)"))
+                            :entry-content "%(org-cliplink-capture)"))
 
 ;; Note names
 (defvar pm/default-note-name-template "%<%s>__${slug}.org")
-(defvar pm/project-note-name-template "project/${slug}.org")
 (defvar pm/daily-note-name-template "%<%Y-%m-%d>.org")
 (defvar pm/people-note-name-template "people/<%s>__${slug}.org")
 
@@ -352,5 +350,14 @@ If some elements are missing, they will be stripped out."
 
 (pm/leader
   "nl" '(pm/link-capture :which-key "capture link"))
+
+(cl-defun pm/note-insert-keyword-and-value (&key node key value)
+  (with-temp-buffer
+    (insert-file-contents (org-roam-node-file node))
+    (org-mode)
+    (org-roam-set-keyword key value)
+    (write-file (org-roam-node-file project-node))))
+
+(load-file (concat user-emacs-directory "notes/projects.el"))
 
 (provide 'notes.el)
