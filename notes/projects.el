@@ -63,12 +63,11 @@
 (defun pm/project-note-capture-journal-template ()
   `("d" "Insert project journal" entry
     ,(pm/template-entry-builder
-      :title-content (concat "[ " (pm/todays-date) " ]")
-      :entry-content (concat "*** [ " (pm/current-time) " ]\n%?")
+      :title-content (concat "[ " (pm/current-time) " ]")
       :no-properties t
-      :levels 2)
+      :levels 3)
     :target ,(pm/project-note-capture-template-target
-              '("Journal"))
+              `("Journal" ,(concat "[ " (pm/todays-date) " ]")))
     :prepend t))
 
 (defun pm/project-note-capture-goto-template ()
