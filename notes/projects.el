@@ -64,6 +64,7 @@
   `("d" "Insert project journal" entry
     ,(pm/template-entry-builder
       :title-content (concat "[ " (pm/current-time) " ]")
+      :entry-content "%?"
       :no-properties t
       :levels 3)
     :target ,(pm/project-note-capture-template-target
