@@ -39,5 +39,12 @@
 
 (persp-mode 1)
 
+(pm/leader
+  "p" '(:ignore t :which-key "switch project")
+  "pp" '(consult-projectile :which-key "switch project")
+  "pf" '(consult-projectile-find-file :which-key "find project file")
+  "pg" '(consult-grep :which-key "search in project")
+  ;; ... add other projectile-specific bindings as needed
+  )
 (provide 'projects.el)
 
