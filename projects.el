@@ -11,6 +11,8 @@
 
 ;;; Code:
 
+;; projectile.el
+
 (projectile-mode +1)
 
 (add-to-list 'projectile-globally-ignored-directories "/nix/*")
@@ -32,6 +34,10 @@
 
 (setq projectile-sort-order 'recentf)
 (setq projectile-per-project-compilation-buffer t)
+
+;; persp-mode.el
+
+(persp-mode 1)
 
 (provide 'projects.el)
 

@@ -61,6 +61,7 @@
 (require 'smartparens)
 (require 'helpful)
 (require 'nix-mode)
+(require 'persp-mode)
 
 ;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
 (defvar pm/initialized nil)

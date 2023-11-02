@@ -78,6 +78,7 @@
                 rainbow-delimiters
                 which-key
                 ts
+                persp-mode
               ];
           };
 
@@ -89,22 +90,12 @@
                   basePackage = emacs;
                   # env.MERMAID_CLI.value = inputs.nixpkgs.lib.getExe pkgs.nodePackages_latest.mermaid_cli;
                   pathAdd = with pkgs; [
-                    sqlite
                     (ripgrep.override { withPCRE2 = true; })
                     shellcheck
                     shfmt
                     fd
                     (aspellWithDicts
                       (dicts: with dicts; [ en en-computers en-science ]))
-                    emacsPackages.editorconfig
-                    terraform
-                    graphviz
-                    maim
-                    html-tidy
-                    nodePackages_latest.stylelint
-                    nodePackages_latest.js-beautify
-                    nixfmt
-                    nodePackages_latest.mermaid-cli
                   ];
                 };
               })
