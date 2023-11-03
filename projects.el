@@ -24,20 +24,8 @@
         ("~/code" . 4)))
 
 
-(pm/leader
-  "p" '(:ignore t :which-key "switch project")
-  "pp" '(projectile-switch-project :which-key "switch project")
-  "pf" '(projectile-find-file :which-key "find project file")
-  "pb" '(projectile-switch-to-buffer :which-key "find project buffer")
-  ;; ... add other projectile-specific bindings as needed
-  )
-
 (setq projectile-sort-order 'recentf)
 (setq projectile-per-project-compilation-buffer t)
-
-;; persp-mode.el
-
-(persp-mode 1)
 
 (pm/leader
   "p" '(:ignore t :which-key "switch project")
@@ -46,5 +34,7 @@
   "pg" '(consult-grep :which-key "search in project")
   ;; ... add other projectile-specific bindings as needed
   )
+
+
 (provide 'projects.el)
 

@@ -81,6 +81,7 @@
 (load-file (concat user-emacs-directory "projects.el"))
 (load-file (concat user-emacs-directory "window.el"))
 (load-file (concat user-emacs-directory "completion.el"))
+(load-file (concat user-emacs-directory "workspaces.el"))
 (load-file (concat user-emacs-directory "vc.el"))
 (load-file (concat user-emacs-directory "org.el"))
 (load-file (concat user-emacs-directory "notes/notes.el"))
