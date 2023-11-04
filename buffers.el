@@ -46,5 +46,53 @@
               (setq visual-fill-column-width 140) 
               (visual-fill-column-mode)))
 
+(defun pm--message-or-count (interactive message count)
+  (if interactive
+      (message message count)
+    count))
+
+(defun pm/fallback-buffer ()
+  "Returns the fallback buffer, creating it if necessary. By default this is the
+scratch buffer. See `pm/fallback-buffer-name' to change this."
+  (let (buffer-list-update-hook)
+    (get-buffer-create pm/fallback-buffer-name)))
+
+(defun pm/project-buffer-list (&optional project)
+  "Return a list of buffers belonging to the specified PROJECT.
+
+If PROJECT is nil, default to the current project.
+
+If no project is active, return all buffers."
+  (let ((buffers (buffer-list)))
+    (if-let* ((project-root
+               (if project (expand-file-name project)
+                 (pm/project-root))))
+        (cl-loop for buf in buffers
+                 if (projectile-project-buffer-p buf project-root)
+                 collect buf)
+      buffers)))
+
+(defun pm/kill-all-buffers (&optional buffer-list interactive)
+  "Kill all buffers and closes their windows.
+
+If the prefix arg is passed, doesn't close windows and only kill buffers that
+belong to the current project."
+  (interactive
+   (list (if current-prefix-arg
+             (pm/project-buffer-list)
+           (buffer-list))
+         t))
+  (if (null buffer-list)
+      (message "No buffers to kill")
+    (save-some-buffers)
+    (delete-other-windows)
+    (when (memq (current-buffer) buffer-list)
+      (switch-to-buffer (pm/fallback-buffer)))
+    (mapc #'kill-buffer buffer-list)
+    (pm--message-or-count
+     interactive "Killed %d buffers"
+     (- (length buffer-list)
+        (length (cl-remove-if-not #'buffer-live-p buffer-list))))))
+
 
 (provide 'buffers.el)
