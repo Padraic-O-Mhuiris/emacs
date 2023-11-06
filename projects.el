@@ -16,6 +16,8 @@
 (projectile-mode +1)
 
 (add-to-list 'projectile-globally-ignored-directories "/nix/*")
+(add-to-list 'projectile-globally-ignored-directories ".direnv/*")
+(add-to-list 'projectile-globally-ignored-directories "~/.cargo/*")
 
 (setq projectile-project-search-path
       '(
@@ -33,7 +35,7 @@
   "pp" '(consult-projectile-switch-project :which-key "switch project")
   "pf" '(consult-projectile-find-file :which-key "find project file")
   "pg" '(consult-grep :which-key "search in project")
-  "pb" '(consult-projectile-switch-to-buffer-other-frame :which-key "switch project buffer")
+  "pb" '(consult-projectile-switch-to-buffer-other-window :which-key "switch project buffer")
   ;; ... add other projectile-specific bindings as needed
   )
 
