@@ -96,18 +96,22 @@
    :props (append props '(:prepend t))))
 
 (cl-defun pm/project-note-capture-new (&key node project-path)
-  (pm/project-note-capture
-   :node node
-   :templates `(("a" "Project Note" plain
-                 "%?"
-                 :target `(file+head+olp
-                           ,(pm/project-note-capture-template-name)
-                           ,(pm/template-head-builder
-                             :tags '("project")
-                             :project-path project-path
-                             :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
-                           '("Abstract"))))
-   :props '(:unnarrowed t :kill-buffer t)))
+  (let* ((target
+          `(file+head+olp
+            ,(pm/project-note-capture-template-name)
+            ,(pm/template-head-builder
+              :tags '("project")
+              :project-path project-path
+              :headings '("Abstract" "Tasks" "Ideas" "Links" "Journal"))
+            ,'("Abstract")))
+         (templates
+          `(("a" "Project Note" plain
+             "%?"
+             :target ,target
+             :unnarrowed t))))
+    (pm/project-note-capture
+     :node node
+     :templates templates)))
 
 (cl-defun pm/project-note-context ()
   "Determines the context a project note capture process exists:
@@ -145,8 +149,9 @@ nil - when in any non-project non-note buffer"
               :on (= nodes:id tags:node-id)
               :where (like tags:tag "%project%")]))))
 
-(cl-defun pm/project-note-read--without-project-path-keyword ()
+(cl-defun pm/project-note-read--without-project-path-keyword (initial-input)
   (pm/note-read
+   :initial-input initial-input
    :prompt "Select/Create project: "
    :filter-fn (lambda (node)
                 (and (pm/note-has-project-tag node)
@@ -171,7 +176,9 @@ nil - when in any non-project non-note buffer"
            :props (if (string= capture-key "e")
                       '(:immediate-finish t :jump-to-captured t)
                     '(:unnarrowed t :kill-buffer t)))
-        (let* ((project-node (pm/project-note-read--without-project-path-keyword)))
+        (let ((project-node (org-roam-populate
+                             (pm/project-note-read--without-project-path-keyword
+                              (projectile-project-name)))))
           (if (org-roam-node-file project-node)
               (progn
                 (pm/note-insert-keyword-and-value
@@ -194,7 +201,8 @@ nil - when in any non-project non-note buffer"
          :node node
          :props '(:unnarrowed t :kill-buffer t)))
     (pm/project-note-capture-new
-     :node node)))
+     :node node
+     :project-path nil)))
 
 (cl-defun pm/project-note (&optional capture-key)
   (let ((ctx (pm/project-note-context)))
