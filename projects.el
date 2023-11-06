@@ -27,19 +27,11 @@
 (setq projectile-sort-order 'recentf)
 (setq projectile-per-project-compilation-buffer t)
 
-(pm/leader
-  "p" '(:ignore t :which-key "switch project")
-  "pp" '(consult-projectile :which-key "switch project")
-  "pf" '(consult-projectile-find-file :which-key "find project file")
-  "pg" '(consult-grep :which-key "search in project")
-  ;; ... add other projectile-specific bindings as needed
-  )
-
 (defun pm/project-name (&optional dir)
   "Return the name of the current project.
 
 Returns '-' if not in a valid project."
-  (if-let (project-root (or (doom-project-root dir)
+  (if-let (project-root (or (pm/project-root dir)
                             (if dir (expand-file-name dir))))
       (funcall projectile-project-name-function project-root)
     "-"))
@@ -56,6 +48,46 @@ Returns nil if not in a project."
   "A `projectile-switch-project-action' that sets the project directory for
 `+workspaces-switch-to-project-h'."
   (setq pm/workspaces--project-dir default-directory))
+
+;; Todo
+;; (defun pm/project-find-file (dir)
+;;   "Jump to a file in DIR (searched recursively).
+
+;; If DIR is not a project, it will be indexed (but not cached)."
+;;   (unless (file-directory-p dir)
+;;     (error "Directory %S does not exist" dir))
+;;   (unless (file-readable-p dir)
+;;     (error "Directory %S isn't readable" dir))
+;;   (let* ((default-directory (file-truename dir))
+;;          (projectile-project-root (pm/project-root dir))
+;;          (projectile-enable-caching projectile-enable-caching))
+;;     (cond ((and projectile-project-root (file-equal-p projectile-project-root default-directory))
+;;            (unless (doom-project-p default-directory)
+;;              ;; Disable caching if this is not a real project; caching
+;;              ;; non-projects easily has the potential to inflate the projectile
+;;              ;; cache beyond reason.
+;;              (setq projectile-enable-caching nil))
+;;            (call-interactively
+;;             ;; Intentionally avoid `helm-projectile-find-file', because it runs
+;;             ;; asynchronously, and thus doesn't see the lexical
+;;             ;; `default-directory'
+;;             (if (doom-module-p :completion 'ivy)
+;;                 #'counsel-projectile-find-file
+;;               #'projectile-find-file)))
+;;           ((and (bound-and-true-p vertico-mode)
+;;                 (fboundp '+vertico/find-file-in))
+;;            (+vertico/find-file-in default-directory))
+;;           ((and (bound-and-true-p ivy-mode)
+;;                 (fboundp 'counsel-file-jump))
+;;            (call-interactively #'counsel-file-jump))
+;;           ((project-current nil dir)
+;;            (project-find-file-in nil nil dir))
+;;           ((and (bound-and-true-p helm-mode)
+;;                 (fboundp 'helm-find-files))
+;;            (call-interactively #'helm-find-files))
+;;           ((call-interactively #'find-file)))))
+
+
 
 (defun pm/workspaces-switch-to-project-h (&optional dir)
   "Creates a workspace dedicated to a new project. If one already exists, switch
@@ -138,6 +170,16 @@ This be hooked to `projectile-after-switch-project-hook'."
       ;;     ;; ("xt" counsel-projectile-switch-project-action-run-term "invoke term from project root")
       ;;     ;; ("X" counsel-projectile-switch-project-action-org-capture "org-capture into project")
       ;;     ))
+
+;; (setq consult-projectile-use-projectile-switch-project t)
+
+(pm/leader
+  "p" '(:ignore t :which-key "switch project")
+  "pp" '(projectile-switch-project :which-key "switch project")
+  "pf" '(consult-projectile-find-file :which-key "find project file")
+  "pg" '(consult-grep :which-key "search in project")
+  ;; ... add other projectile-specific bindings as needed
+  )
 
 
 

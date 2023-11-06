@@ -14,7 +14,6 @@
 (defvar pm/workspace--last nil)
 (defvar pm/workspace--index 0)
 (defvar pm/workspaces-main "main")
-(defvar pm/fallback-buffer-name "*scratch*")
 (defvar pm/workspaces--indirect-buffers-to-restore nil)
 (defvar pm/workspace--old-uniquify-style nil)
 (defvar pm/workspaces--project-dir nil)
@@ -29,7 +28,7 @@ t           Always create a new workspace for the project
             associated with it.
 nil         Never create a new workspace on project switch.")
 
-(defvar pm/workspaces-switch-project-function #'consult-projectile-find-file
+(defvar pm/workspaces-switch-project-function #'consult-projectile--file
   "The function to run after `projectile-switch-project' or
 `counsel-projectile-switch-project'. This function must take one argument: the
 new project directory.")
@@ -302,8 +301,8 @@ created."
       (with-selected-frame frame
         (pm/workspace-switch (format "#%s" (pm/workspace--generate-id)) t)
         ;; real/unreal buffer functionality
-        ;; (unless (doom-real-buffer-p (current-buffer))
-        ;;   (switch-to-buffer (pm/fallback-buffer)))
+        (unless (pm/real-buffer-p (current-buffer))
+          (switch-to-buffer (pm/fallback-buffer)))
         (set-frame-parameter frame 'workspace (pm/workspace-current-name))
         ;; ensure every buffer has a buffer-predicate
         (persp-set-frame-buffer-predicate frame))
@@ -321,7 +320,6 @@ created."
 
 ;; configuration
 
-(persp-mode 1)
 ;; Buffers that are not displayed in any other perspective will be killed when they're removed from a perspective.
 (setq persp-autokill-buffer-on-remove 'kill-weak)
 ;; Prevents persp-mode from resetting window configurations when they're set to nil.
@@ -357,12 +355,11 @@ created."
 (add-hook 'persp-activated-functions #'pm/workspaces-load-winner-data-h)
 
 ;; Needs something emulating global buffer switch hook
-;; (add-hook 'doom-switch-buffer-hook #'pm/workspaces-add-current-buffer-h)
+(add-hook 'pm/switch-buffer-hook #'pm/workspaces-add-current-buffer-h)
 
 ;; Doom utilises a categorisation framework for buffers to filter them into real - buffers which are useful, and unreal - buffers which are of little import, and can be cast aside readily
-;; (add-hook 'persp-add-buffer-on-after-change-major-mode-filter-functions
-;;           #'doom-unreal-buffer-p)
-
+(add-hook 'persp-add-buffer-on-after-change-major-mode-filter-functions
+          #'pm/unreal-buffer-p)
 ;; 
 ;; (defadvice! +workspaces--evil-alternate-buffer-a (&optional window)
 ;;             "Make `evil-alternate-buffer' ignore buffers outside the current workspace."
@@ -390,7 +387,6 @@ created."
 ;; (define-key! persp-mode-map
 ;;              [remap delete-window] #'+workspace/close-window-or-workspace
 ;;              [remap evil-window-delete] #'+workspace/close-window-or-workspace)
-
 
 (setq persp-init-frame-behaviour t
       persp-init-new-frame-behaviour-override nil
@@ -583,10 +579,8 @@ workspace to delete."
                   (if (pm/workspace-exists-p pm/workspace--last)
                       pm/workspace--last
                     (car (pm/workspace-list-names))))
-                 ;; real vs unreal buffer logic
-                 ;; (unless (doom-buffer-frame-predicate (window-buffer))
-                 ;;   (switch-to-buffer (doom-fallback-buffer)))
-                 )
+                 (unless (doom-buffer-frame-predicate (window-buffer))
+                   (switch-to-buffer (pm/fallback-buffer))))
                 (t
                  (pm/workspace-switch pm/workspaces-main t)
                  (unless (string= (car workspaces) pm/workspaces-main)
@@ -742,5 +736,19 @@ the next."
   "Swap the current workspace with the COUNTth workspace on its right."
   (interactive "p")
   (funcall-interactively #'pm/workspace/swap-left (- count)))
+
+(general-define-key
+ "M-1" 'pm/workspace/switch-to-0
+ "M-2" 'pm/workspace/switch-to-1
+ "M-3" 'pm/workspace/switch-to-2
+ "M-4" 'pm/workspace/switch-to-3
+ "M-5" 'pm/workspace/switch-to-4
+ "M-6" 'pm/workspace/switch-to-5
+ "M-7" 'pm/workspace/switch-to-6
+ "M-8" 'pm/workspace/switch-to-7
+ "M-9" 'pm/workspace/switch-to-8
+ "M-<delete>" 'pm/workspace/close-window-or-workspace
+ "M-<left>" 'pm/workspace/switch-left
+ "M-<right>" 'pm/workspace/swap-right)
 
 (provide 'workspaces.el)

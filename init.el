@@ -89,6 +89,9 @@
 (load-file (concat user-emacs-directory "utils.el"))
 (load-file (concat user-emacs-directory "languages/nix.el"))
 
+;; Set persp-mode to last ensures initialisation process is finalised
+(persp-mode 1)
+
 (provide 'init)
 ;;; init.el ends here
 
