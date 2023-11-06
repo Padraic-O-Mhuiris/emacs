@@ -79,6 +79,7 @@
                 which-key
                 ts
                 persp-mode
+                bufler
               ];
           };
 

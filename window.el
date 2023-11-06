@@ -22,9 +22,6 @@
 ;; Set ace-window labels for jumping between frames
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
-
-
-
 (defun pm/visible-windows (&optional window-list)
   "Return a list of the visible, non-popup (dedicated) windows."
   (cl-loop for window in (or window-list (window-list))

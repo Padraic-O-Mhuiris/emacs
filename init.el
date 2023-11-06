@@ -62,6 +62,7 @@
 (require 'helpful)
 (require 'nix-mode)
 (require 'persp-mode)
+(require 'bufler)
 
 ;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
 (defvar pm/initialized nil)
@@ -78,7 +79,6 @@
 (load-file (concat user-emacs-directory "ui.el"))
 (load-file (concat user-emacs-directory "history.el"))
 (load-file (concat user-emacs-directory "editing.el"))
-(load-file (concat user-emacs-directory "workspaces.el"))
 (load-file (concat user-emacs-directory "projects.el"))
 (load-file (concat user-emacs-directory "window.el"))
 (load-file (concat user-emacs-directory "completion.el"))
@@ -90,7 +90,7 @@
 (load-file (concat user-emacs-directory "languages/nix.el"))
 
 ;; Set persp-mode to last ensures initialisation process is finalised
-(persp-mode 1)
+;; (persp-mode 1)
 
 (provide 'init)
 ;;; init.el ends here
