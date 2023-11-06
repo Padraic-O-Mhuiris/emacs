@@ -46,4 +46,19 @@
               (setq visual-fill-column-width 140) 
               (visual-fill-column-mode)))
 
+
+(bufler-mode)
+
+(general-define-key
+ "C-x b" 'bufler-switch-buffer)
+
+(pm/leader
+  "b" '(:ignore t :which-key "buffers")
+  "bb" '(bufler-switch-buffer :which-key "switch buffer")
+  "bl" '(bufler-list :which-key "display buffer list")
+  ;; ... add other projectile-specific bindings as needed
+  )
+
+
+
 (provide 'buffers.el)
