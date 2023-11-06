@@ -21,5 +21,7 @@
 
 (add-hook 'prog-mode-hook 'smartparens-mode)
 
+(envrc-global-mode)
+
 (provide 'ide.el)
 

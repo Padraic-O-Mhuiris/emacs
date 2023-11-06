@@ -80,6 +80,7 @@
                 ts
                 persp-mode
                 bufler
+                envrc
               ];
           };
 
