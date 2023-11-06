@@ -40,7 +40,7 @@
 ;; Sensible defaults for global line wrapping behaviour in all text and program modes. Lines will "wrap" at column 140 but will respect window width first
 (setq fill-column 80)
 (add-hook 'text-mode-hook 'visual-line-mode)
-(add-hook 'prog-mode-hook 'visual-line-mode)
+;; (add-hook 'prog-mode-hook 'visual-line-mode)
 (add-hook 'visual-line-mode-hook
           #'(lambda ()
               (setq visual-fill-column-width 140) 
