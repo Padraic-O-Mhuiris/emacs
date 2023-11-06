@@ -3,10 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
     emacs.url = "github:nix-community/emacs-overlay";
-
-
     wrapper-manager = {
       url = "github:Padraic-O-Mhuiris/wrapper-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,16 +21,6 @@
             inherit system;
             overlays = [ inputs.emacs.overlay ];
           };
-
-          # tangle = pkgs.writeShellScriptBin "tangle" ''
-          #   emacs -Q --batch --eval "
-          #        (progn
-          #          (require 'ob-tangle)
-          #          (dolist (file command-line-args-left)
-          #            (with-current-buffer (find-file-noselect file)
-          #              (org-babel-tangle))))
-          #      " "$@"
-          # '';
 
           emacs = pkgs.emacsWithPackagesFromUsePackage {
             config = ""; # We don't want to create a default.el file
@@ -81,6 +68,12 @@
                 persp-mode
                 bufler
                 envrc
+                lsp-mode
+                rustic
+                tree-sitter-langs
+                lsp-ui
+                flycheck
+                consult-lsp
               ];
           };
 
@@ -90,7 +83,6 @@
               ({ pkgs, ... }: {
                 wrappers.emacs = {
                   basePackage = emacs;
-                  # env.MERMAID_CLI.value = inputs.nixpkgs.lib.getExe pkgs.nodePackages_latest.mermaid_cli;
                   pathAdd = with pkgs; [
                     (ripgrep.override { withPCRE2 = true; })
                     shellcheck
@@ -103,21 +95,6 @@
               })
             ];
           });
-
-          # literate-emacs = pkgs.writeShellScriptBin "emacs" ''
-          #   TMP_DIR=$(mktemp -d -t ".emacs.dXXXX")
-          #   cd $TMP_DIR
-          #   ln -s ${./README.org} "$TMP_DIR/README.org"
-          #   ${tangle}/bin/tangle ./README.org
-          #   ls $TMP_DIR
-          #   cd -
-
-          #   ${emacs}/bin/emacs --init-directory $TMP_DIR $@
-          # '';
-
-          # my-emacs = pkgs.writeShellScriptBin "emacs" ''
-          #   ${wrapped-emacs}/bin/emacs --debug-init $@ 
-          # '';
 
         in { packages.default = wrapped-emacs; };
 

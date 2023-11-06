@@ -63,6 +63,13 @@
 (require 'nix-mode)
 (require 'persp-mode)
 (require 'bufler)
+(require 'treesit)
+(require 'tree-sitter-langs)
+(require 'lsp-mode)
+(require 'lsp-ui)
+(require 'consult-lsp)
+(require 'rustic)
+(require 'flycheck)
 
 ;; Add an initialization flag which can be used for functionality I don't want to re-execute when the config is reloaded
 (defvar pm/initialized nil)
