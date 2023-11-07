@@ -74,6 +74,7 @@
                 lsp-ui
                 flycheck
                 consult-lsp
+                ox-hugo
               ];
           };
 
