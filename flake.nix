@@ -89,6 +89,7 @@
                     shellcheck
                     shfmt
                     fd
+                    rust-analyzer
                     (aspellWithDicts
                       (dicts: with dicts; [ en en-computers en-science ]))
                   ];

@@ -21,9 +21,10 @@
         (org-roam-node-file node)
         '("project_path"))))
 
-(cl-defun pm/project-note-read ()
+(cl-defun pm/project-note-read (&key (require-match nil))
   (interactive)
   (pm/note-read
+   :require-match require-match
    :prompt "Select from projects: "
    :filter-fn (lambda (node)
                 (cl-some (lambda (tag)
@@ -233,9 +234,13 @@ nil - when in any non-project non-note buffer"
   (interactive)
   (pm/project-note "e"))
 
+(cl-defun pm/project-note-find ()
+  (interactive)
+  (org-roam-node-visit (pm/project-note-read :require-match t)))
+
 (pm/leader
   "np" '(nil :which-key "capture project")
-  "npf" '(pm/project-note-read :which-key "find project note")
+  "npf" '(pm/project-note-find :which-key "find project note")
   "npg" '(pm/project-note-goto :which-key "goto project note")
   "npt" '(pm/project-note-todo :which-key "capture project todo")
   "npi" '(pm/project-note-idea :which-key "capture project idea")
