@@ -12,10 +12,9 @@
 ;;; Code:
 (add-to-list 'projectile-project-root-files "Cargo.toml")
 
-(setq lsp-rust-analyzer-cargo-watch-command "clippy")
-
 (setq rustic-format-on-save t)
 (setq rustic-indent-method-chain t)
+(setq rustic-lsp-setup-p t)
 
 (setq lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
 (setq lsp-rust-analyzer-display-chaining-hints t)
@@ -23,6 +22,13 @@
 (setq lsp-rust-analyzer-display-closure-return-type-hints t)
 (setq lsp-rust-analyzer-display-parameter-hints nil)
 (setq lsp-rust-analyzer-display-reborrow-hints nil)
+(setq lsp-rust-analyzer-cargo-watch-command "clippy")
+
+;; (add-to-list 'flycheck-checkers 'rustic-clippy)
+
+(add-hook 'after-init-hook
+          #'(lambda ()
+              (push 'rustic-clippy flycheck-checkers)))
 
 (provide 'rust.el)
 
